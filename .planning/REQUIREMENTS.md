@@ -80,39 +80,39 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | — | Pending |
-| AUTH-02 | — | Pending |
-| AUTH-03 | — | Pending |
-| AUTH-04 | — | Pending |
-| DISC-01 | — | Pending |
-| DISC-02 | — | Pending |
-| DISC-03 | — | Pending |
-| DISC-04 | — | Pending |
-| DISC-05 | — | Pending |
-| DISC-06 | — | Pending |
-| DISC-07 | — | Pending |
-| DISC-08 | — | Pending |
-| DISC-09 | — | Pending |
-| AIGEN-01 | — | Pending |
-| AIGEN-02 | — | Pending |
-| AIGEN-03 | — | Pending |
-| AIGEN-04 | — | Pending |
-| REVW-01 | — | Pending |
-| REVW-02 | — | Pending |
-| REVW-03 | — | Pending |
-| REVW-04 | — | Pending |
-| REVW-05 | — | Pending |
-| REVW-06 | — | Pending |
-| PLAT-01 | — | Pending |
-| PLAT-02 | — | Pending |
-| PLAT-03 | — | Pending |
-| PLAT-04 | — | Pending |
+| AUTH-01 | Phase 1 | Pending |
+| AUTH-02 | Phase 2 | Pending |
+| AUTH-03 | Phase 2 | Pending |
+| AUTH-04 | Phase 2 | Pending |
+| DISC-01 | Phase 3 | Pending |
+| DISC-02 | Phase 3 | Pending |
+| DISC-03 | Phase 4 | Pending |
+| DISC-04 | Phase 4 | Pending |
+| DISC-05 | Phase 4 | Pending |
+| DISC-06 | Phase 5 | Pending |
+| DISC-07 | Phase 5 | Pending |
+| DISC-08 | Phase 5 | Pending |
+| DISC-09 | Phase 5 | Pending |
+| AIGEN-01 | Phase 6 | Pending |
+| AIGEN-02 | Phase 6 | Pending |
+| AIGEN-03 | Phase 6 | Pending |
+| AIGEN-04 | Phase 6 | Pending |
+| REVW-01 | Phase 7 | Pending |
+| REVW-02 | Phase 7 | Pending |
+| REVW-03 | Phase 7 | Pending |
+| REVW-04 | Phase 8 | Pending |
+| REVW-05 | Phase 9 | Pending |
+| REVW-06 | Phase 9 | Pending |
+| PLAT-01 | Phase 3 | Pending |
+| PLAT-02 | Phase 8 | Pending |
+| PLAT-03 | Phase 8 | Pending |
+| PLAT-04 | Phase 9 | Pending |
 
 **Coverage:**
 - v1 requirements: 27 total
-- Mapped to phases: 0
-- Unmapped: 27 ⚠️
+- Mapped to phases: 27
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-06*
-*Last updated: 2026-03-06 after initial definition*
+*Last updated: 2026-03-06 after roadmap creation*
