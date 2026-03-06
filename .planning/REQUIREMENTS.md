@@ -7,7 +7,7 @@
 
 ### Authentication & Profile
 
-- [ ] **AUTH-01**: User can create account and log in to the web dashboard
+- [x] **AUTH-01**: User can create account and log in to the web dashboard
 - [ ] **AUTH-02**: User can upload resume (PDF/DOCX) and have it parsed into structured data
 - [ ] **AUTH-03**: User can manually edit parsed profile (education, work history, skills)
 - [ ] **AUTH-04**: User can set job preferences (location, role type, industries, keywords)
@@ -80,7 +80,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 1 | Pending |
+| AUTH-01 | Phase 1 | Complete |
 | AUTH-02 | Phase 2 | Pending |
 | AUTH-03 | Phase 2 | Pending |
 | AUTH-04 | Phase 2 | Pending |
