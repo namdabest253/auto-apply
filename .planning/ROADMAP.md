@@ -33,11 +33,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. User can log in and maintain a session across page refreshes
   3. User can log out from any page in the dashboard
   4. The application runs via Docker Compose with PostgreSQL and Redis provisioned
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Scaffold Next.js project, Docker Compose, Prisma schema, core libraries, and test infrastructure
+- [ ] 01-02-PLAN.md — Auth.js authentication, login/register pages, dashboard shell with dark-themed top nav
 
 ### Phase 2: Profile & Resume
 **Goal**: User can build a complete applicant profile from an uploaded resume and manual edits
@@ -172,7 +172,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Auth | 0/2 | Not started | - |
+| 1. Foundation & Auth | 0/2 | Planning complete | - |
 | 2. Profile & Resume | 0/2 | Not started | - |
 | 3. Scraping Infrastructure | 0/3 | Not started | - |
 | 4. Extended Platform Scrapers | 0/3 | Not started | - |
