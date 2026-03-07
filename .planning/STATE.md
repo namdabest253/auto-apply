@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-07T06:42:18.573Z"
-last_activity: 2026-03-07 -- Plan 01-02 complete (auth system + dashboard shell)
+status: in_progress
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-07T15:56:37Z"
+last_activity: 2026-03-07 -- Plan 02-01 complete (profile schema, types, resume parser)
 progress:
   total_phases: 9
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 11
+  total_plans: 3
+  completed_plans: 1
+  percent: 15
 ---
 
 # Project State
@@ -21,33 +21,34 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-06)
 
 **Core value:** Applications go out consistently and at volume -- every relevant internship gets a tailored, high-quality application without manual effort per listing.
-**Current focus:** Phase 1 complete. Ready for Phase 2: Profile & Resume
+**Current focus:** Phase 2: Profile & Resume -- Plan 1 of 3 complete
 
 ## Current Position
 
-Phase: 1 of 9 (Foundation & Auth) -- COMPLETE
-Plan: 2 of 2 in current phase (all done)
-Status: Phase complete
-Last activity: 2026-03-07 -- Plan 01-02 complete (auth system + dashboard shell)
+Phase: 2 of 9 (Profile & Resume)
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-03-07 -- Plan 02-01 complete (profile schema, types, resume parser)
 
-Progress: [█░░░░░░░░░] 11%
+Progress: [██░░░░░░░░] 15%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 56min
-- Total execution time: 1.85 hours
+- Total plans completed: 3
+- Average duration: 39min
+- Total execution time: 1.95 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation-auth | 2 | 111min | 56min |
+| 02-profile-resume | 1 | 6min | 6min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (21min), 01-02 (90min)
-- Trend: baseline (phase 1 complete)
+- Last 5 plans: 01-01 (21min), 01-02 (90min), 02-01 (6min)
+- Trend: accelerating
 
 *Updated after each plan completion*
 
@@ -67,6 +68,8 @@ Recent decisions affecting current work:
 - Auth.config.ts split pattern for Edge-compatible middleware
 - Single-user enforcement via user count check in registration action
 - Dark mode default with zinc palette; top horizontal nav (not sidebar)
+- Used prisma db push instead of migrate dev due to shadow DB permission constraints
+- Resume parser uses regex section detection with otherText fallback for unrecognized content
 
 ### Pending Todos
 
@@ -79,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T06:42:18.570Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-profile-resume/02-CONTEXT.md
+Last session: 2026-03-07T15:56:37Z
+Stopped at: Completed 02-01-PLAN.md
+Resume file: .planning/phases/02-profile-resume/02-02-PLAN.md
