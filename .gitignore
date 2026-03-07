@@ -39,3 +39,6 @@ postgres_data
 redis_data
 
 /src/generated/prisma
+
+# uploaded files
+/uploads
