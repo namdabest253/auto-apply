@@ -13,7 +13,7 @@ AutoApply is built as a pipeline: profile data feeds job discovery, which feeds 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Auth** - Project scaffolding, database, authentication, and app shell (completed 2026-03-07)
-- [ ] **Phase 2: Profile & Resume** - Resume upload/parsing, profile editing, and job preferences
+- [x] **Phase 2: Profile & Resume** - Resume upload/parsing, profile editing, and job preferences (completed 2026-03-07)
 - [ ] **Phase 3: Scraping Infrastructure** - Queue system, stealth browser setup, and first two platform scrapers
 - [ ] **Phase 4: Extended Platform Scrapers** - Additional platform adapters for Lever, Workday, LinkedIn, and Handshake
 - [ ] **Phase 5: Discovery Features** - Job filtering, match scoring, scheduled discovery, and deduplication
@@ -174,7 +174,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Auth | 2/2 | Complete   | 2026-03-07 |
-| 2. Profile & Resume | 1/3 | In Progress|  |
+| 2. Profile & Resume | 3/3 | Complete   | 2026-03-07 |
 | 3. Scraping Infrastructure | 0/3 | Not started | - |
 | 4. Extended Platform Scrapers | 0/3 | Not started | - |
 | 5. Discovery Features | 0/2 | Not started | - |
