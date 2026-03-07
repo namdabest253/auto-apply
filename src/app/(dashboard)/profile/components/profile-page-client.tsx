@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation"
 import { ResumeUpload } from "./resume-upload"
 import { ProfileEditor } from "./profile-editor"
+import { JobPreferences } from "./job-preferences"
+import { QABank } from "./qa-bank"
 
 interface ProfilePageClientProps {
   hasProfile: boolean
@@ -69,6 +71,17 @@ interface ProfilePageClientProps {
     sortOrder: number
   }>
   otherText: string
+  jobPreferences?: {
+    locations: string[]
+    roleTypes: string[]
+    industries: string[]
+    keywords: string[]
+  }
+  qaEntries: Array<{
+    id: string
+    question: string
+    answer: string
+  }>
 }
 
 export function ProfilePageClient({
@@ -83,6 +96,8 @@ export function ProfilePageClient({
   volunteerWork,
   publications,
   otherText,
+  jobPreferences,
+  qaEntries,
 }: ProfilePageClientProps) {
   const router = useRouter()
 
@@ -117,6 +132,10 @@ export function ProfilePageClient({
         publications={publications}
         otherText={otherText}
       />
+
+      <JobPreferences preferences={jobPreferences} />
+
+      <QABank entries={qaEntries} />
     </div>
   )
 }

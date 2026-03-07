@@ -93,6 +93,21 @@ export default async function ProfilePage() {
 
   const skillNames = (profile?.skills ?? []).map((s) => s.name)
 
+  const jobPreferences = profile?.jobPreferences
+    ? {
+        locations: profile.jobPreferences.locations,
+        roleTypes: profile.jobPreferences.roleTypes,
+        industries: profile.jobPreferences.industries,
+        keywords: profile.jobPreferences.keywords,
+      }
+    : undefined
+
+  const qaEntries = (profile?.qaEntries ?? []).map((e) => ({
+    id: e.id,
+    question: e.question,
+    answer: e.answer,
+  }))
+
   return (
     <ProfilePageClient
       hasProfile={!!profile}
@@ -106,6 +121,8 @@ export default async function ProfilePage() {
       volunteerWork={volunteerData}
       publications={pubData}
       otherText={profile?.otherText ?? ""}
+      jobPreferences={jobPreferences}
+      qaEntries={qaEntries}
     />
   )
 }
