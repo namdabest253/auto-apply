@@ -15,6 +15,7 @@ model User {
   image          String?
   hashedPassword String?
   accounts       Account[]
+  profile        Profile?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -44,4 +45,126 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model Profile {
+  id              String          @id @default(cuid())
+  userId          String          @unique
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeFileName  String?
+  resumeFilePath  String?
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  contactLinkedIn String?
+  contactWebsite  String?
+  contactLocation String?
+  otherText       String?
+  education       Education[]
+  workHistory     WorkHistory[]
+  projects        Project[]
+  certifications  Certification[]
+  skills          Skill[]
+  volunteerWork   VolunteerWork[]
+  publications    Publication[]
+  jobPreferences  JobPreference?
+  qaEntries       QAEntry[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model Education {
+  id           String  @id @default(cuid())
+  profileId    String
+  profile      Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  school       String
+  degree       String?
+  fieldOfStudy String?
+  startDate    String?
+  endDate      String?
+  gpa          String?
+  coursework   String?
+  sortOrder    Int     @default(0)
+}
+
+model WorkHistory {
+  id        String   @id @default(cuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  company   String
+  title     String?
+  startDate String?
+  endDate   String?
+  bullets   String[]
+  sortOrder Int      @default(0)
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  profileId    String
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  url          String?
+  technologies String[]
+  sortOrder    Int      @default(0)
+}
+
+model Certification {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name      String
+  issuer    String?
+  date      String?
+  sortOrder Int     @default(0)
+}
+
+model Skill {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  name      String
+}
+
+model VolunteerWork {
+  id           String  @id @default(cuid())
+  profileId    String
+  profile      Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  organization String
+  role         String?
+  startDate    String?
+  endDate      String?
+  description  String?
+  sortOrder    Int     @default(0)
+}
+
+model Publication {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  title     String
+  venue     String?
+  date      String?
+  url       String?
+  sortOrder Int     @default(0)
+}
+
+model JobPreference {
+  id        String   @id @default(cuid())
+  profileId String   @unique
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  locations String[]
+  roleTypes String[]
+  industries String[]
+  keywords  String[]
+}
+
+model QAEntry {
+  id        String  @id @default(cuid())
+  profileId String
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  question  String
+  answer    String
+  sortOrder Int     @default(0)
 }
