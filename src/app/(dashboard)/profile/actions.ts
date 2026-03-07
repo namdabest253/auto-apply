@@ -354,3 +354,80 @@ export async function deletePublication(id: string) {
   await prisma.publication.delete({ where: { id } })
   revalidatePath("/profile")
 }
+
+export async function saveJobPreferences(data: {
+  locations: string[]
+  roleTypes: string[]
+  industries: string[]
+  keywords: string[]
+}) {
+  const profileId = await getProfileId()
+
+  await prisma.jobPreference.upsert({
+    where: { profileId },
+    update: {
+      locations: data.locations,
+      roleTypes: data.roleTypes,
+      industries: data.industries,
+      keywords: data.keywords,
+    },
+    create: {
+      profileId,
+      locations: data.locations,
+      roleTypes: data.roleTypes,
+      industries: data.industries,
+      keywords: data.keywords,
+    },
+  })
+
+  revalidatePath("/profile")
+}
+
+export async function saveQAEntry(data: {
+  id?: string
+  question: string
+  answer: string
+}) {
+  const profileId = await getProfileId()
+
+  if (data.id) {
+    // Verify entry belongs to this user's profile
+    const existing = await prisma.qAEntry.findFirst({
+      where: { id: data.id, profileId },
+    })
+    if (!existing) throw new Error("Q&A entry not found")
+
+    await prisma.qAEntry.update({
+      where: { id: data.id },
+      data: {
+        question: data.question,
+        answer: data.answer,
+      },
+    })
+  } else {
+    const count = await prisma.qAEntry.count({ where: { profileId } })
+    await prisma.qAEntry.create({
+      data: {
+        profileId,
+        question: data.question,
+        answer: data.answer,
+        sortOrder: count,
+      },
+    })
+  }
+
+  revalidatePath("/profile")
+}
+
+export async function deleteQAEntry(id: string) {
+  const profileId = await getProfileId()
+
+  // Verify entry belongs to this user's profile
+  const existing = await prisma.qAEntry.findFirst({
+    where: { id, profileId },
+  })
+  if (!existing) throw new Error("Q&A entry not found")
+
+  await prisma.qAEntry.delete({ where: { id } })
+  revalidatePath("/profile")
+}
