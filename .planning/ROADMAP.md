@@ -48,11 +48,12 @@ Plans:
   2. User can manually edit any parsed profile field and save changes
   3. User can set job preferences (location, role type, industries, keywords) that persist across sessions
   4. Profile data is stored in a structured format ready for downstream consumption by AI and matching
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md — Prisma schema expansion, TypeScript types, and TDD resume parser
+- [ ] 02-02-PLAN.md — Resume upload API route, profile page with drag-and-drop upload and editable sections
+- [ ] 02-03-PLAN.md — Job preferences (locations, roles, industries, keywords) and Q&A bank
 
 ### Phase 3: Scraping Infrastructure
 **Goal**: System can discover internship listings from Indeed and Greenhouse job boards using stealth browser automation
@@ -173,7 +174,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Auth | 2/2 | Complete   | 2026-03-07 |
-| 2. Profile & Resume | 0/2 | Not started | - |
+| 2. Profile & Resume | 0/3 | Not started | - |
 | 3. Scraping Infrastructure | 0/3 | Not started | - |
 | 4. Extended Platform Scrapers | 0/3 | Not started | - |
 | 5. Discovery Features | 0/2 | Not started | - |
