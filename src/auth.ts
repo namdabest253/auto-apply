@@ -6,8 +6,10 @@ import GitHub from "next-auth/providers/github"
 import { prisma } from "@/lib/prisma"
 import { verifyPassword } from "@/lib/password"
 import { signInSchema } from "@/lib/validators"
+import { authConfig } from "@/auth.config"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   providers: [
@@ -34,17 +36,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    jwt({ token, user }) {
-      if (user) token.id = user.id
-      return token
-    },
-    session({ session, token }) {
-      session.user.id = token.id as string
-      return session
-    },
-  },
-  pages: {
-    signIn: "/login",
-  },
 })
