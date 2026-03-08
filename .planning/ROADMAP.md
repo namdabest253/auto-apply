@@ -70,7 +70,7 @@ Plans:
 Plans:
 - [ ] 03-01-PLAN.md — Prisma schema (JobListing, ScrapeRun), scraper adapter interface, Indeed + Greenhouse scrapers, stealth browser config
 - [ ] 03-02-PLAN.md — BullMQ queue and worker process, Docker worker service, scrape trigger and status API routes
-- [ ] 03-03-PLAN.md — Jobs dashboard UI: data table with sorting, detail side panel, scrape status bar, Discover Jobs button
+- [ ] 03-03-PLAN.md — Jobs dashboard UI: data table with sorting, detail side panel, scrape status bar, Discover Jobs button, Greenhouse board config
 
 ### Phase 4: Extended Platform Scrapers
 **Goal**: System discovers jobs from all target platforms, covering the major ATS and job board ecosystem
