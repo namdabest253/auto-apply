@@ -77,16 +77,18 @@ Plans:
 
 **Goal:** Dramatically increase internship discovery yield by filtering for intern-level roles, excluding senior/PhD/MBA positions, expanding the company list, and adding Lever as a new scraping source
 **Depends on:** Phase 3
+**Requirements:** INTERN-01, INTERN-02, INTERN-03, INTERN-04, INTERN-05
 **Success Criteria** (what must be TRUE):
   1. Greenhouse scraper filters jobs to only return internship-level roles (title/department must match "intern"/"internship")
   2. Greenhouse scraper excludes PhD, MBA, Senior, Staff, Principal, Lead, and Manager-level roles via negative keyword filtering
   3. Greenhouse company list expanded to 50+ companies with known internship programs
   4. Lever API scraper implemented following the same adapter interface, discovering internship listings
   5. Internship discovery yield increases significantly (from ~47 to hundreds of relevant results)
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 03.1 to break down)
+- [ ] 03.1-01-PLAN.md — Shared internship filtering, company list expansion (50+ Greenhouse + 18 Lever), Greenhouse scraper filtering update
+- [ ] 03.1-02-PLAN.md — Lever API scraper implementation and worker registration
 
 ### Phase 4: Extended Platform Scrapers
 **Goal**: System discovers jobs from all target platforms — ATS-specific adapters, major boards, AND direct company career page crawling for freshness advantage
@@ -198,7 +200,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.1 → 4 → 5 → 6 → 7 �
 | 1. Foundation & Auth | 2/2 | Complete   | 2026-03-07 |
 | 2. Profile & Resume | 3/3 | Complete   | 2026-03-07 |
 | 3. Scraping Infrastructure | 0/3 | Not started | - |
-| 3.1 Internship Discovery Improvements | 0/? | Not planned | - |
+| 3.1 Internship Discovery Improvements | 0/2 | Planned | - |
 | 4. Extended Platform Scrapers | 0/4 | Not started | - |
 | 5. Discovery Features | 0/2 | Not started | - |
 | 6. AI Generation | 0/3 | Not started | - |
