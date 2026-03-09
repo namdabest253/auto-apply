@@ -16,6 +16,8 @@ model User {
   hashedPassword String?
   accounts       Account[]
   profile        Profile?
+  jobListings    JobListing[]
+  scrapeRuns     ScrapeRun[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -167,4 +169,43 @@ model QAEntry {
   question  String
   answer    String
   sortOrder Int     @default(0)
+}
+
+model JobListing {
+  id              String     @id @default(cuid())
+  userId          String
+  user            User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  externalUrl     String
+  platform        String
+  title           String
+  company         String
+  location        String?
+  datePosted      DateTime?
+  descriptionHtml String?    @db.Text
+  descriptionText String?    @db.Text
+  salary          String?
+  metadata        Json?
+  isStale         Boolean    @default(false)
+  scrapeRunId     String?
+  scrapeRun       ScrapeRun? @relation(fields: [scrapeRunId], references: [id])
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([userId, externalUrl])
+  @@index([userId, createdAt])
+  @@index([userId, isStale])
+}
+
+model ScrapeRun {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status      String
+  platforms   String[]
+  jobsFound   Int          @default(0)
+  errors      Json?
+  startedAt   DateTime     @default(now())
+  completedAt DateTime?
+  duration    Int?
+  jobs        JobListing[]
 }
