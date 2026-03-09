@@ -29,6 +29,26 @@ const SAMPLE_GREENHOUSE_RESPONSE = {
       departments: [{ name: "Data" }],
       offices: [],
     },
+    {
+      id: 789,
+      title: "Senior Software Engineer",
+      absolute_url: "https://boards.greenhouse.io/stripe/jobs/789",
+      location: { name: "New York, NY" },
+      updated_at: "2026-03-03T10:00:00Z",
+      content: "<p>Senior role.</p>",
+      departments: [{ name: "Engineering" }],
+      offices: [{ name: "NYC" }],
+    },
+    {
+      id: 101,
+      title: "Product Manager",
+      absolute_url: "https://boards.greenhouse.io/stripe/jobs/101",
+      location: { name: "Remote" },
+      updated_at: "2026-03-04T10:00:00Z",
+      content: "<p>PM role.</p>",
+      departments: [{ name: "Product" }],
+      offices: [],
+    },
   ],
 };
 
@@ -57,11 +77,13 @@ describe("GreenhouseScraper", () => {
       roleTypes: [],
     });
 
-    // Should have results from multiple companies
+    // Should have results (only intern jobs)
     expect(jobs.length).toBeGreaterThan(0);
 
-    // Find one of our sample jobs
-    const stripeJob = jobs.find((j) => j.externalUrl.includes("stripe/jobs/123"));
+    // Find one of our sample intern jobs
+    const stripeJob = jobs.find((j) =>
+      j.externalUrl.includes("stripe/jobs/123")
+    );
     if (stripeJob) {
       expect(stripeJob.title).toBe("Software Engineering Intern");
       expect(stripeJob.platform).toBe("greenhouse");
@@ -72,7 +94,9 @@ describe("GreenhouseScraper", () => {
     // Verify fetch was called with correct URL pattern
     const fetchCalls = vi.mocked(global.fetch).mock.calls;
     const urls = fetchCalls.map((c) => c[0] as string);
-    expect(urls.some((u) => u.includes("boards-api.greenhouse.io"))).toBe(true);
+    expect(urls.some((u) => u.includes("boards-api.greenhouse.io"))).toBe(
+      true
+    );
     expect(urls.some((u) => u.includes("content=true"))).toBe(true);
   });
 
@@ -88,10 +112,7 @@ describe("GreenhouseScraper", () => {
       roleTypes: [],
     });
 
-    // Company names should be proper names, not slugs
     for (const job of jobs) {
-      // Should not contain only lowercase slug-like names
-      // The company field should use the curated name from the list
       expect(job.company.length).toBeGreaterThan(0);
     }
   });
@@ -103,7 +124,6 @@ describe("GreenhouseScraper", () => {
       statusText: "Not Found",
     } as any);
 
-    // Should not throw, should return whatever it collected (empty in this case)
     const jobs = await scraper.discover({
       keywords: [],
       locations: [],
@@ -113,21 +133,67 @@ describe("GreenhouseScraper", () => {
     expect(Array.isArray(jobs)).toBe(true);
   });
 
-  it("filters jobs by keywords when provided", async () => {
+  it("filters for internship roles only (excludes non-intern jobs)", async () => {
     vi.mocked(global.fetch).mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(SAMPLE_GREENHOUSE_RESPONSE),
     } as any);
 
     const jobs = await scraper.discover({
-      keywords: ["data"],
+      keywords: [],
       locations: [],
       roleTypes: [],
     });
 
-    // Only jobs with "data" in title should be returned
-    for (const job of jobs) {
-      expect(job.title.toLowerCase()).toContain("data");
-    }
+    // Should only return intern jobs, not senior or PM roles
+    const titles = jobs.map((j) => j.title);
+    expect(titles).toContain("Software Engineering Intern");
+    expect(titles).toContain("Data Analyst Intern");
+    expect(titles).not.toContain("Senior Software Engineer");
+    expect(titles).not.toContain("Product Manager");
+  });
+
+  it("uses department metadata for internship detection", async () => {
+    const responseWithDeptIntern = {
+      jobs: [
+        {
+          id: 200,
+          title: "Software Engineer",
+          absolute_url: "https://boards.greenhouse.io/test/jobs/200",
+          location: { name: "Remote" },
+          updated_at: "2026-03-01T10:00:00Z",
+          content: "<p>Role description.</p>",
+          departments: [{ name: "Internship Program" }],
+          offices: [],
+        },
+        {
+          id: 201,
+          title: "Software Engineer",
+          absolute_url: "https://boards.greenhouse.io/test/jobs/201",
+          location: { name: "Remote" },
+          updated_at: "2026-03-01T10:00:00Z",
+          content: "<p>Role description.</p>",
+          departments: [{ name: "Engineering" }],
+          offices: [],
+        },
+      ],
+    };
+
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(responseWithDeptIntern),
+    } as any);
+
+    const jobs = await scraper.discover({
+      keywords: [],
+      locations: [],
+      roleTypes: [],
+    });
+
+    // Should include the one in "Internship Program" department
+    const urls = jobs.map((j) => j.externalUrl);
+    expect(urls.some((u) => u.includes("jobs/200"))).toBe(true);
+    // Should NOT include the generic engineering one
+    expect(urls.some((u) => u.includes("jobs/201"))).toBe(false);
   });
 });
