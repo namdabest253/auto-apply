@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-stopped_at: Completed 03.1-01-PLAN.md
-last_updated: "2026-03-09"
+status: executing
+stopped_at: Completed 03.1-02-PLAN.md
+last_updated: "2026-03-09T21:11:50.101Z"
 last_activity: 2026-03-09 -- Completed 03.1-01-PLAN.md (internship filtering + company expansion)
 progress:
   total_phases: 10
-  completed_phases: 2
-  total_plans: 9
-  completed_plans: 8
+  completed_phases: 3
+  total_plans: 10
+  completed_plans: 9
   percent: 44
 ---
 
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-06)
 
 **Core value:** Applications go out consistently and at volume -- every relevant internship gets a tailored, high-quality application without manual effort per listing.
-**Current focus:** Phase 03.1: Internship Discovery Improvements -- in progress
+**Current focus:** Phase 03.1: Internship Discovery Improvements -- COMPLETE
 
 ## Current Position
 
-Phase: 3.1 of 9 (Internship Discovery Improvements) -- IN PROGRESS
-Plan: 1 of 2 executed (2 plans in 1 wave)
-Status: Executing phase 03.1
-Last activity: 2026-03-09 -- Completed 03.1-01-PLAN.md (internship filtering + company expansion)
+Phase: 3.1 of 9 (Internship Discovery Improvements) -- COMPLETE
+Plan: 2 of 2 executed (2 plans in 1 wave)
+Status: Phase 03.1 complete
+Last activity: 2026-03-09 -- Completed 03.1-02-PLAN.md (Lever API scraper)
 
-Progress: [████░░░░░░] 44%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 28min
-- Total execution time: 3.12 hours
+- Total plans completed: 8
+- Average duration: 25min
+- Total execution time: 3.15 hours
 
 **By Phase:**
 
@@ -46,13 +46,14 @@ Progress: [████░░░░░░] 44%
 | 01-foundation-auth | 2 | 111min | 56min |
 | 02-profile-resume | 3 | 65min | 22min |
 | 03-scraping-infrastructure | 2 | 10min | 5min |
-| 03.1-internship-discovery | 1 | 4min | 4min |
+| 03.1-internship-discovery | 2 | 6min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (40min), 02-03 (19min), 03-01 (7min), 03-02 (3min), 03.1-01 (4min)
+- Last 5 plans: 02-03 (19min), 03-01 (7min), 03-02 (3min), 03.1-01 (4min), 03.1-02 (2min)
 - Trend: improving
 
 *Updated after each plan completion*
+| Phase 03.1 P02 | 2min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,7 @@ Recent decisions affecting current work:
 - Word-boundary regex for intern/internship/co-op avoids false positives like 'internal' or 'international'
 - Negative patterns checked against title only (not department) to avoid excluding valid internship program departments
 - Department string concatenated with title for positive matching to catch generic titles in internship departments
+- [Phase 03.1]: Lever API returns raw JSON array; salary formatted as CURRENCY MIN-MAX/INTERVAL
 
 ### Pending Todos
 
@@ -104,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-09
-Stopped at: Completed 03.1-01-PLAN.md
-Resume file: .planning/phases/03.1-internship-discovery-improvements/03.1-02-PLAN.md
+Last session: 2026-03-09T21:11:50.098Z
+Stopped at: Completed 03.1-02-PLAN.md
+Resume file: None
