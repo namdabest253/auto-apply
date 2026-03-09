@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "worker:scrape": "tsx src/workers/scrape.worker.ts",
+    "worker:scrape:watch": "tsx --watch src/workers/scrape.worker.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
@@ -21,8 +23,10 @@
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "bcryptjs": "^3.0.3",
+    "bullmq": "^5.70.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "ioredis": "^5.10.0",
     "lucide-react": "^0.577.0",
     "mammoth": "^1.11.0",
     "next": "15",

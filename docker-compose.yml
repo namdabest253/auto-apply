@@ -17,6 +17,23 @@ services:
       - .:/app
       - /app/node_modules
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npx tsx src/workers/scrape.worker.ts
+    environment:
+      - DATABASE_URL=postgresql://autoapply:autoapply@postgres:5432/autoapply
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+
   postgres:
     image: postgres:16-alpine
     environment:
