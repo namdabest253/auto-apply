@@ -23,6 +23,7 @@
 - [ ] **DISC-07**: System scores each listing against user profile for match quality
 - [ ] **DISC-08**: System runs scheduled/recurring job discovery automatically
 - [ ] **DISC-09**: System deduplicates jobs found across multiple platforms
+- [ ] **DISC-10**: System crawls company career pages directly to discover jobs before they appear on aggregators (generic crawler using AI extraction)
 
 ### AI Generation
 
@@ -46,6 +47,8 @@
 - [ ] **PLAT-02**: System integrates CAPTCHA solving service (2Captcha/CapSolver)
 - [ ] **PLAT-03**: System uses platform-specific ATS adapters for form filling (Greenhouse, Lever, Workday)
 - [ ] **PLAT-04**: System enforces rate limits and circuit breakers per platform
+- [ ] **PLAT-05**: System uses AI-powered semantic form understanding to fill unknown/custom application forms (not just hardcoded ATS adapters)
+- [ ] **PLAT-06**: System auto-answers screening questions using the user's Q&A bank and profile data
 
 ## v2 Requirements
 
@@ -64,7 +67,6 @@
 ### Enhanced Review
 
 - **ENHREV-01**: System runs automated quality checks (company name mismatch, fabricated skills)
-- **ENHREV-02**: System maintains screening question knowledge base for common questions
 
 ## Out of Scope
 
@@ -107,12 +109,15 @@
 | PLAT-02 | Phase 8 | Pending |
 | PLAT-03 | Phase 8 | Pending |
 | PLAT-04 | Phase 9 | Pending |
+| DISC-10 | Phase 4 | Pending |
+| PLAT-05 | Phase 8 | Pending |
+| PLAT-06 | Phase 8 | Pending |
 
 **Coverage:**
-- v1 requirements: 27 total
-- Mapped to phases: 27
+- v1 requirements: 30 total
+- Mapped to phases: 30
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-06*
-*Last updated: 2026-03-06 after roadmap creation*
+*Last updated: 2026-03-08 — added DISC-10 (generic career page crawler), PLAT-05 (AI form filling), PLAT-06 (screening Q&A); promoted from v2/new based on InternInsider + AIApply competitive analysis*

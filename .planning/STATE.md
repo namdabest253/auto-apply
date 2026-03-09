@@ -75,6 +75,8 @@ Recent decisions affecting current work:
 - Profile auto-creates on first manual edit via getProfileId helper
 - Multi-select uses checkbox grid UI for predefined option lists (better multi-selection UX)
 - QA entry ownership verified via profileId before update/delete (security)
+- Competitive analysis (InternInsider + AIApply): added generic career page crawler (DISC-10) to Phase 4, AI semantic form filling (PLAT-05) and screening Q&A auto-answer (PLAT-06) to Phase 8
+- Strategy: combine InternInsider's freshness advantage (direct company crawling) with AIApply's auto-apply breadth (AI form understanding for any site)
 
 ### Pending Todos
 

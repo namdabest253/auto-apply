@@ -15,11 +15,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Auth** - Project scaffolding, database, authentication, and app shell (completed 2026-03-07)
 - [x] **Phase 2: Profile & Resume** - Resume upload/parsing, profile editing, and job preferences (completed 2026-03-07)
 - [ ] **Phase 3: Scraping Infrastructure** - Queue system, stealth browser setup, and first two platform scrapers
-- [ ] **Phase 4: Extended Platform Scrapers** - Additional platform adapters for Lever, Workday, LinkedIn, and Handshake
+- [ ] **Phase 4: Extended Platform Scrapers** - ATS adapters (Lever, Workday), LinkedIn, Handshake, and generic career page crawler
 - [ ] **Phase 5: Discovery Features** - Job filtering, match scoring, scheduled discovery, and deduplication
 - [ ] **Phase 6: AI Generation** - Resume tailoring, cover letter generation, provider abstraction, and hallucination detection
 - [ ] **Phase 7: Review Queue** - Batch review interface with approve/reject/edit and diff view
-- [ ] **Phase 8: Browser Automation** - Form filling engine, ATS submission adapters, and CAPTCHA solving
+- [ ] **Phase 8: Browser Automation** - AI-powered form filling engine, ATS adapters, semantic form understanding, screening Q&A, and CAPTCHA solving
 - [ ] **Phase 9: Submission Hardening** - Screenshot capture, application logging, rate limits, and circuit breakers
 
 ## Phase Details
@@ -73,20 +73,23 @@ Plans:
 - [ ] 03-03-PLAN.md — Jobs dashboard UI: data table with sorting, detail side panel, scrape status bar, Discover Jobs button, Greenhouse board config
 
 ### Phase 4: Extended Platform Scrapers
-**Goal**: System discovers jobs from all target platforms, covering the major ATS and job board ecosystem
+**Goal**: System discovers jobs from all target platforms — ATS-specific adapters, major boards, AND direct company career page crawling for freshness advantage
 **Depends on**: Phase 3
-**Requirements**: DISC-03, DISC-04, DISC-05
+**Requirements**: DISC-03, DISC-04, DISC-05, DISC-10
 **Success Criteria** (what must be TRUE):
   1. System scrapes job listings from Lever and Workday career pages
   2. System scrapes job listings from LinkedIn (read-only discovery, no application)
   3. System scrapes job listings from Handshake
   4. Each platform adapter follows the shared adapter interface established in Phase 3
+  5. System crawls arbitrary company career pages (given a URL) and extracts job listings using AI, discovering jobs before they appear on aggregators
+  6. User can add target company career page URLs for direct crawling
 **Plans**: TBD
 
 Plans:
 - [ ] 04-01: TBD
 - [ ] 04-02: TBD
 - [ ] 04-03: TBD
+- [ ] 04-04: TBD
 
 ### Phase 5: Discovery Features
 **Goal**: User can efficiently find relevant jobs through filtering, scoring, and automated recurring discovery
@@ -135,20 +138,23 @@ Plans:
 - [ ] 07-02: TBD
 
 ### Phase 8: Browser Automation
-**Goal**: System can automatically fill out and submit application forms on major ATS platforms
+**Goal**: System can automatically fill out and submit application forms on known ATS platforms AND unknown/custom career pages using AI-powered form understanding
 **Depends on**: Phase 7, Phase 3
-**Requirements**: REVW-04, PLAT-02, PLAT-03
+**Requirements**: REVW-04, PLAT-02, PLAT-03, PLAT-05, PLAT-06
 **Success Criteria** (what must be TRUE):
-  1. System fills out application forms via Playwright on Greenhouse and Lever career pages
+  1. System fills out application forms via Playwright on Greenhouse and Lever career pages using platform-specific ATS adapters
   2. System integrates a CAPTCHA solving service and successfully resolves CAPTCHAs during form submission
-  3. System uses platform-specific ATS adapters that handle form field mapping for each supported platform
-  4. Approved applications from the review queue are submitted automatically without manual intervention
+  3. System uses AI-powered semantic DOM analysis to fill application forms on unknown/custom career pages (not just hardcoded adapters)
+  4. System auto-answers screening questions (work authorization, experience level, etc.) using the user's Q&A bank and profile data
+  5. Approved applications from the review queue are submitted automatically without manual intervention
+  6. System falls back gracefully: tries ATS adapter first, then AI form filler, then flags for manual review if both fail
 **Plans**: TBD
 
 Plans:
 - [ ] 08-01: TBD
 - [ ] 08-02: TBD
 - [ ] 08-03: TBD
+- [ ] 08-04: TBD
 
 ### Phase 9: Submission Hardening
 **Goal**: System produces verifiable submission evidence and operates within safe rate limits
@@ -176,9 +182,9 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 1. Foundation & Auth | 2/2 | Complete   | 2026-03-07 |
 | 2. Profile & Resume | 3/3 | Complete   | 2026-03-07 |
 | 3. Scraping Infrastructure | 0/3 | Not started | - |
-| 4. Extended Platform Scrapers | 0/3 | Not started | - |
+| 4. Extended Platform Scrapers | 0/4 | Not started | - |
 | 5. Discovery Features | 0/2 | Not started | - |
 | 6. AI Generation | 0/3 | Not started | - |
 | 7. Review Queue | 0/2 | Not started | - |
-| 8. Browser Automation | 0/3 | Not started | - |
+| 8. Browser Automation | 0/4 | Not started | - |
 | 9. Submission Hardening | 0/2 | Not started | - |
