@@ -14,8 +14,8 @@
 
 ### Job Discovery
 
-- [ ] **DISC-01**: System scrapes job listings from Indeed
-- [ ] **DISC-02**: System scrapes job listings from Greenhouse job boards
+- [x] **DISC-01**: System scrapes job listings from Indeed
+- [x] **DISC-02**: System scrapes job listings from Greenhouse job boards
 - [ ] **DISC-03**: System scrapes job listings from company career pages (Lever, Workday)
 - [ ] **DISC-04**: System scrapes job listings from LinkedIn (read-only discovery)
 - [ ] **DISC-05**: System scrapes job listings from Handshake
@@ -43,7 +43,7 @@
 
 ### Platform & Stealth
 
-- [ ] **PLAT-01**: System uses stealth browser configuration (anti-fingerprinting, behavioral patterns)
+- [x] **PLAT-01**: System uses stealth browser configuration (anti-fingerprinting, behavioral patterns)
 - [ ] **PLAT-02**: System integrates CAPTCHA solving service (2Captcha/CapSolver)
 - [ ] **PLAT-03**: System uses platform-specific ATS adapters for form filling (Greenhouse, Lever, Workday)
 - [ ] **PLAT-04**: System enforces rate limits and circuit breakers per platform
@@ -86,8 +86,8 @@
 | AUTH-02 | Phase 2 | Complete |
 | AUTH-03 | Phase 2 | Complete |
 | AUTH-04 | Phase 2 | Complete |
-| DISC-01 | Phase 3 | Pending |
-| DISC-02 | Phase 3 | Pending |
+| DISC-01 | Phase 3 | Complete |
+| DISC-02 | Phase 3 | Complete |
 | DISC-03 | Phase 4 | Pending |
 | DISC-04 | Phase 4 | Pending |
 | DISC-05 | Phase 4 | Pending |
@@ -105,7 +105,7 @@
 | REVW-04 | Phase 8 | Pending |
 | REVW-05 | Phase 9 | Pending |
 | REVW-06 | Phase 9 | Pending |
-| PLAT-01 | Phase 3 | Pending |
+| PLAT-01 | Phase 3 | Complete |
 | PLAT-02 | Phase 8 | Pending |
 | PLAT-03 | Phase 8 | Pending |
 | PLAT-04 | Phase 9 | Pending |
