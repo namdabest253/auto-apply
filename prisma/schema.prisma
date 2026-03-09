@@ -18,6 +18,7 @@ model User {
   profile        Profile?
   jobListings    JobListing[]
   scrapeRuns     ScrapeRun[]
+  settings       UserSetting[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -194,6 +195,16 @@ model JobListing {
   @@unique([userId, externalUrl])
   @@index([userId, createdAt])
   @@index([userId, isStale])
+}
+
+model UserSetting {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key    String
+  value  String @db.Text
+
+  @@unique([userId, key], name: "userId_key")
 }
 
 model ScrapeRun {
