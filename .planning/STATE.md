@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 03-01-PLAN.md
+stopped_at: Completed 03-02-PLAN.md
 last_updated: "2026-03-09"
-last_activity: 2026-03-09 -- Completed 03-01-PLAN.md (scraper adapters + data layer)
+last_activity: 2026-03-09 -- Completed 03-02-PLAN.md (BullMQ worker queue + API routes)
 progress:
   total_phases: 9
   completed_phases: 2
   total_plans: 8
-  completed_plans: 6
-  percent: 36
+  completed_plans: 7
+  percent: 41
 ---
 
 # Project State
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-06)
 ## Current Position
 
 Phase: 3 of 9 (Scraping Infrastructure) -- IN PROGRESS
-Plan: 1 of 3 executed (3 plans in 3 waves)
+Plan: 2 of 3 executed (3 plans in 3 waves)
 Status: Executing phase 3
-Last activity: 2026-03-09 -- Completed 03-01-PLAN.md (scraper adapters + data layer)
+Last activity: 2026-03-09 -- Completed 03-02-PLAN.md (BullMQ worker queue + API routes)
 
-Progress: [████░░░░░░] 36%
+Progress: [████░░░░░░] 41%
 
 ## Performance Metrics
 
@@ -45,10 +45,10 @@ Progress: [████░░░░░░] 36%
 |-------|-------|-------|----------|
 | 01-foundation-auth | 2 | 111min | 56min |
 | 02-profile-resume | 3 | 65min | 22min |
-| 03-scraping-infrastructure | 1 | 7min | 7min |
+| 03-scraping-infrastructure | 2 | 10min | 5min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (6min), 02-02 (40min), 02-03 (19min), 03-01 (7min)
+- Last 5 plans: 02-01 (6min), 02-02 (40min), 02-03 (19min), 03-01 (7min), 03-02 (3min)
 - Trend: improving
 
 *Updated after each plan completion*
@@ -81,6 +81,8 @@ Recent decisions affecting current work:
 - rebrowser-playwright requires standard playwright as peer dependency (compatibility workaround)
 - Prisma 7 config needs explicit dotenv/config import for env var loading
 - ScraperAdapter interface: { platform: string; discover(params): Promise<DiscoveredJob[]> }
+- BullMQ: use ConnectionOptions object (not IORedis instance) to avoid version mismatch
+- Worker uses completed_with_errors status for partial scraper failures
 
 ### Pending Todos
 
@@ -94,5 +96,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 03-01-PLAN.md
-Resume file: .planning/phases/03-scraping-infrastructure/03-02-PLAN.md
+Stopped at: Completed 03-02-PLAN.md
+Resume file: .planning/phases/03-scraping-infrastructure/03-03-PLAN.md
