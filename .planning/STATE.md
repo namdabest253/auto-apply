@@ -7,7 +7,7 @@ stopped_at: Completed 03-02-PLAN.md
 last_updated: "2026-03-09"
 last_activity: 2026-03-09 -- Completed 03-02-PLAN.md (BullMQ worker queue + API routes)
 progress:
-  total_phases: 9
+  total_phases: 10
   completed_phases: 2
   total_plans: 8
   completed_plans: 7
@@ -87,6 +87,11 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 None yet.
+
+### Roadmap Evolution
+
+- Phase 03.1 inserted after Phase 3: Internship Discovery Improvements — internship filtering, expanded company list, Lever scraper (URGENT)
+  - Reason: Only 47/5800 scraped jobs are internships; most results are senior/full-time roles unusable by undergrad user
 
 ### Blockers/Concerns
 
