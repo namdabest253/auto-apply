@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: Completed 03-02-PLAN.md
+stopped_at: Completed 03.1-01-PLAN.md
 last_updated: "2026-03-09"
-last_activity: 2026-03-09 -- Completed 03-02-PLAN.md (BullMQ worker queue + API routes)
+last_activity: 2026-03-09 -- Completed 03.1-01-PLAN.md (internship filtering + company expansion)
 progress:
   total_phases: 10
   completed_phases: 2
-  total_plans: 8
-  completed_plans: 7
-  percent: 41
+  total_plans: 9
+  completed_plans: 8
+  percent: 44
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-06)
 
 **Core value:** Applications go out consistently and at volume -- every relevant internship gets a tailored, high-quality application without manual effort per listing.
-**Current focus:** Phase 3: Scraping Infrastructure -- planned, ready for execution
+**Current focus:** Phase 03.1: Internship Discovery Improvements -- in progress
 
 ## Current Position
 
-Phase: 3 of 9 (Scraping Infrastructure) -- IN PROGRESS
-Plan: 2 of 3 executed (3 plans in 3 waves)
-Status: Executing phase 3
-Last activity: 2026-03-09 -- Completed 03-02-PLAN.md (BullMQ worker queue + API routes)
+Phase: 3.1 of 9 (Internship Discovery Improvements) -- IN PROGRESS
+Plan: 1 of 2 executed (2 plans in 1 wave)
+Status: Executing phase 03.1
+Last activity: 2026-03-09 -- Completed 03.1-01-PLAN.md (internship filtering + company expansion)
 
-Progress: [████░░░░░░] 41%
+Progress: [████░░░░░░] 44%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 31min
-- Total execution time: 3.05 hours
+- Total plans completed: 7
+- Average duration: 28min
+- Total execution time: 3.12 hours
 
 **By Phase:**
 
@@ -46,9 +46,10 @@ Progress: [████░░░░░░] 41%
 | 01-foundation-auth | 2 | 111min | 56min |
 | 02-profile-resume | 3 | 65min | 22min |
 | 03-scraping-infrastructure | 2 | 10min | 5min |
+| 03.1-internship-discovery | 1 | 4min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (6min), 02-02 (40min), 02-03 (19min), 03-01 (7min), 03-02 (3min)
+- Last 5 plans: 02-02 (40min), 02-03 (19min), 03-01 (7min), 03-02 (3min), 03.1-01 (4min)
 - Trend: improving
 
 *Updated after each plan completion*
@@ -83,6 +84,9 @@ Recent decisions affecting current work:
 - ScraperAdapter interface: { platform: string; discover(params): Promise<DiscoveredJob[]> }
 - BullMQ: use ConnectionOptions object (not IORedis instance) to avoid version mismatch
 - Worker uses completed_with_errors status for partial scraper failures
+- Word-boundary regex for intern/internship/co-op avoids false positives like 'internal' or 'international'
+- Negative patterns checked against title only (not department) to avoid excluding valid internship program departments
+- Department string concatenated with title for positive matching to catch generic titles in internship departments
 
 ### Pending Todos
 
@@ -101,5 +105,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-03-09
-Stopped at: Completed 03-02-PLAN.md
-Resume file: .planning/phases/03-scraping-infrastructure/03-03-PLAN.md
+Stopped at: Completed 03.1-01-PLAN.md
+Resume file: .planning/phases/03.1-internship-discovery-improvements/03.1-02-PLAN.md
