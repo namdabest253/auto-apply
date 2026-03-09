@@ -3,6 +3,7 @@ import { Worker, Job } from "bullmq";
 import { getRedisConnectionOptions } from "./queue";
 import { IndeedScraper } from "@/lib/scrapers/indeed";
 import { GreenhouseScraper } from "@/lib/scrapers/greenhouse";
+import { LeverScraper } from "@/lib/scrapers/lever";
 import { filterNewJobs } from "@/lib/scrapers/dedup";
 import { prisma } from "@/lib/prisma";
 import type { SearchParams, DiscoveredJob } from "@/lib/scrapers/types";
@@ -34,8 +35,8 @@ async function processScrapeJob(job: Job<ScrapeJobData>): Promise<void> {
   const allDiscovered: DiscoveredJob[] = [];
   const errors: Record<string, string> = {};
 
-  // Run scrapers sequentially (Indeed first - uses browser resources)
-  const scrapers = [new IndeedScraper(), new GreenhouseScraper()];
+  // Indeed requires residential proxies (403/CAPTCHA from server IPs) — disabled for now
+  const scrapers = [new GreenhouseScraper(), new LeverScraper()];
 
   for (const scraper of scrapers) {
     try {
