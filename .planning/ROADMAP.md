@@ -101,13 +101,13 @@ Plans:
   4. Each platform adapter follows the shared adapter interface established in Phase 3
   5. System crawls arbitrary company career pages (given a URL) and extracts job listings using AI, discovering jobs before they appear on aggregators
   6. User can add target company career page URLs for direct crawling
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
-- [ ] 04-03: TBD
-- [ ] 04-04: TBD
+- [ ] 04-01-PLAN.md — Workday JSON API scraper with curated company list + LinkedIn guest API scraper
+- [ ] 04-02-PLAN.md — Generic career page crawler with AI extraction (Claude + Vercel AI SDK) and career page URL settings UI
+- [ ] 04-03-PLAN.md — Handshake SSO scraper with encrypted credential storage and credentials settings UI
+- [ ] 04-04-PLAN.md — Wire all new scrapers into worker process and scrape trigger API
 
 ### Phase 5: Discovery Features
 **Goal**: User can efficiently find relevant jobs through filtering, scoring, and automated recurring discovery
@@ -201,7 +201,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 3.1 → 4 → 5 → 6 → 7 �
 | 2. Profile & Resume | 3/3 | Complete   | 2026-03-07 |
 | 3. Scraping Infrastructure | 0/3 | Not started | - |
 | 3.1 Internship Discovery Improvements | 0/2 | Planned | - |
-| 4. Extended Platform Scrapers | 0/4 | Not started | - |
+| 4. Extended Platform Scrapers | 0/4 | Planned | - |
 | 5. Discovery Features | 0/2 | Not started | - |
 | 6. AI Generation | 0/3 | Not started | - |
 | 7. Review Queue | 0/2 | Not started | - |
