@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-03-11T02:13:03Z"
+status: executing
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-03-11T02:17:39.372Z"
 last_activity: 2026-03-11 -- Completed 04-03-PLAN.md (Handshake scraper)
 progress:
   total_phases: 10
   completed_phases: 3
   total_plans: 14
-  completed_plans: 10
+  completed_plans: 12
   percent: 71
 ---
 
@@ -55,6 +55,7 @@ Progress: [███████░░░] 71%
 *Updated after each plan completion*
 | Phase 03.1 P02 | 2min | 2 tasks | 3 files |
 | Phase 04 P03 | 5min | 3 tasks | 9 files |
+| Phase 04 P01 | 5min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,9 @@ Recent decisions affecting current work:
 - [Phase 04]: AES-256-GCM with randomized IV for credential encryption; credentials stored as encrypted JSON in UserSetting
 - [Phase 04]: SSO provider detection via URL pattern matching (Okta, CAS, generic fallback) with MFA/Duo 60s timeout
 - [Phase 04]: Scraper returns empty array on failure (never throws) to avoid blocking other scrapers in worker
+- [Phase 04]: Workday JSON API first with stealth browser fallback on 403/429
+- [Phase 04]: LinkedIn guest API with regex HTML parsing (no DOM parser dependency)
+- [Phase 04]: 40 Workday companies with per-entry domain/slug/site for varied subdomain patterns
 
 ### Pending Todos
 
@@ -110,6 +114,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-11T02:13:03Z
-Stopped at: Completed 04-03-PLAN.md
-Resume file: .planning/phases/04-extended-platform-scrapers/04-03-SUMMARY.md
+Last session: 2026-03-11T02:17:39.368Z
+Stopped at: Completed 04-01-PLAN.md
+Resume file: None

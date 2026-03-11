@@ -16,8 +16,8 @@
 
 - [x] **DISC-01**: System scrapes job listings from Indeed
 - [x] **DISC-02**: System scrapes job listings from Greenhouse job boards
-- [ ] **DISC-03**: System scrapes job listings from company career pages (Lever, Workday)
-- [ ] **DISC-04**: System scrapes job listings from LinkedIn (read-only discovery)
+- [x] **DISC-03**: System scrapes job listings from company career pages (Lever, Workday)
+- [x] **DISC-04**: System scrapes job listings from LinkedIn (read-only discovery)
 - [x] **DISC-05**: System scrapes job listings from Handshake
 - [ ] **DISC-06**: User can filter jobs by location, role type, company, and keywords
 - [ ] **DISC-07**: System scores each listing against user profile for match quality
@@ -88,8 +88,8 @@
 | AUTH-04 | Phase 2 | Complete |
 | DISC-01 | Phase 3 | Complete |
 | DISC-02 | Phase 3 | Complete |
-| DISC-03 | Phase 4 | Pending |
-| DISC-04 | Phase 4 | Pending |
+| DISC-03 | Phase 4 | Complete |
+| DISC-04 | Phase 4 | Complete |
 | DISC-05 | Phase 4 | Complete |
 | DISC-06 | Phase 5 | Pending |
 | DISC-07 | Phase 5 | Pending |
