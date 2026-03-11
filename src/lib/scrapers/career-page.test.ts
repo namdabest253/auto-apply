@@ -209,6 +209,11 @@ describe("CareerPageCrawler - AI extraction mapping", () => {
       { id: "1", userId: "user-123", url: "https://example.com/careers", label: "Acme Corp", createdAt: new Date(), updatedAt: new Date() },
     ])
 
+    // HTML must have enough text content to pass isMinimalContent check (>200 chars)
+    const jobDescription = "We are looking for talented Software Engineer Interns to join our team. " +
+      "You will work on exciting projects involving machine learning, distributed systems, and more. " +
+      "Requirements include experience with JavaScript, Python, and cloud platforms. " +
+      "Benefits include competitive salary, mentorship, and flexible work arrangements."
     const mockHtml = `
       <html><body>
         <h1>Careers at Acme</h1>
@@ -216,6 +221,7 @@ describe("CareerPageCrawler - AI extraction mapping", () => {
           <a href="/jobs/123"><h2>Software Engineer Intern</h2></a>
           <p>Location: San Francisco, CA</p>
           <p>Posted: 2026-01-15</p>
+          <p>${jobDescription}</p>
         </div>
       </body></html>
     `
