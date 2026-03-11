@@ -23,7 +23,7 @@
 - [ ] **DISC-07**: System scores each listing against user profile for match quality
 - [ ] **DISC-08**: System runs scheduled/recurring job discovery automatically
 - [ ] **DISC-09**: System deduplicates jobs found across multiple platforms
-- [ ] **DISC-10**: System crawls company career pages directly to discover jobs before they appear on aggregators (generic crawler using AI extraction)
+- [x] **DISC-10**: System crawls company career pages directly to discover jobs before they appear on aggregators (generic crawler using AI extraction)
 
 ### AI Generation
 
@@ -109,7 +109,7 @@
 | PLAT-02 | Phase 8 | Pending |
 | PLAT-03 | Phase 8 | Pending |
 | PLAT-04 | Phase 9 | Pending |
-| DISC-10 | Phase 4 | Pending |
+| DISC-10 | Phase 4 | Complete |
 | PLAT-05 | Phase 8 | Pending |
 | PLAT-06 | Phase 8 | Pending |
 
