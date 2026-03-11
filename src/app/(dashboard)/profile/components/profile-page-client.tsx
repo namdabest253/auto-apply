@@ -5,6 +5,8 @@ import { ResumeUpload } from "./resume-upload"
 import { ProfileEditor } from "./profile-editor"
 import { JobPreferences } from "./job-preferences"
 import { QABank } from "./qa-bank"
+import { CareerPages } from "./career-pages"
+import { HandshakeCredentials } from "./handshake-credentials"
 
 interface ProfilePageClientProps {
   hasProfile: boolean
@@ -82,6 +84,15 @@ interface ProfilePageClientProps {
     question: string
     answer: string
   }>
+  careerPages: Array<{
+    id: string
+    url: string
+    label: string
+  }>
+  handshakeStatus: {
+    hasCredentials: boolean
+    universityName?: string
+  }
 }
 
 export function ProfilePageClient({
@@ -98,6 +109,8 @@ export function ProfilePageClient({
   otherText,
   jobPreferences,
   qaEntries,
+  careerPages,
+  handshakeStatus,
 }: ProfilePageClientProps) {
   const router = useRouter()
 
@@ -134,6 +147,13 @@ export function ProfilePageClient({
       />
 
       <JobPreferences preferences={jobPreferences} />
+
+      <CareerPages pages={careerPages} />
+
+      <HandshakeCredentials
+        hasCredentials={handshakeStatus.hasCredentials}
+        universityName={handshakeStatus.universityName}
+      />
 
       <QABank entries={qaEntries} />
     </div>

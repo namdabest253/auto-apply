@@ -19,6 +19,7 @@ model User {
   jobListings    JobListing[]
   scrapeRuns     ScrapeRun[]
   settings       UserSetting[]
+  careerPageUrls CareerPageUrl[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 }
@@ -205,6 +206,18 @@ model UserSetting {
   value  String @db.Text
 
   @@unique([userId, key], name: "userId_key")
+}
+
+model CareerPageUrl {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  url       String
+  label     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, url])
 }
 
 model ScrapeRun {

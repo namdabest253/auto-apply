@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { ProfilePageClient } from "./components/profile-page-client"
+import { getHandshakeStatus } from "./handshake-actions"
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -108,6 +109,16 @@ export default async function ProfilePage() {
     answer: e.answer,
   }))
 
+  const handshakeStatus = await getHandshakeStatus(session.user.id).catch(
+    () => ({ hasCredentials: false, universityName: undefined })
+  )
+
+  const careerPages = await prisma.careerPageUrl.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, url: true, label: true },
+  })
+
   return (
     <ProfilePageClient
       hasProfile={!!profile}
@@ -123,6 +134,8 @@ export default async function ProfilePage() {
       otherText={profile?.otherText ?? ""}
       jobPreferences={jobPreferences}
       qaEntries={qaEntries}
+      careerPages={careerPages}
+      handshakeStatus={handshakeStatus}
     />
   )
 }

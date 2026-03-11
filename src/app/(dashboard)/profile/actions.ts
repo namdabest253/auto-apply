@@ -431,3 +431,57 @@ export async function deleteQAEntry(id: string) {
   await prisma.qAEntry.delete({ where: { id } })
   revalidatePath("/profile")
 }
+
+// Career Page URL management
+
+export async function addCareerPage(formData: FormData) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error("Unauthorized")
+
+  const url = (formData.get("url") as string)?.trim()
+  const label = (formData.get("label") as string)?.trim()
+
+  if (!url || !label) throw new Error("URL and company name are required")
+
+  // Basic URL validation
+  try {
+    new URL(url)
+  } catch {
+    throw new Error("Invalid URL format")
+  }
+
+  const entry = await prisma.careerPageUrl.create({
+    data: {
+      userId: session.user.id,
+      url,
+      label,
+    },
+  })
+
+  revalidatePath("/profile")
+  return entry
+}
+
+export async function removeCareerPage(id: string) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error("Unauthorized")
+
+  // Verify ownership
+  const existing = await prisma.careerPageUrl.findFirst({
+    where: { id, userId: session.user.id },
+  })
+  if (!existing) throw new Error("Career page URL not found")
+
+  await prisma.careerPageUrl.delete({ where: { id } })
+  revalidatePath("/profile")
+}
+
+export async function getCareerPages() {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error("Unauthorized")
+
+  return prisma.careerPageUrl.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+  })
+}

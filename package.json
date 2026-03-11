@@ -9,10 +9,11 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "worker:scrape": "tsx src/workers/scrape.worker.ts",
-    "worker:scrape:watch": "tsx --watch src/workers/scrape.worker.ts"
+    "worker:scrape": "npx tsx src/workers/scrape.worker.ts",
+    "worker:scrape:watch": "npx tsx --watch src/workers/scrape.worker.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.58",
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
@@ -24,6 +25,7 @@
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@tanstack/react-table": "^8.21.3",
+    "ai": "^6.0.116",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.70.4",
     "class-variance-authority": "^0.7.1",
