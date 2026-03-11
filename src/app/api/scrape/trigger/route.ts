@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { scrapeQueue } from "@/workers/queue";
+import { getScrapeQueue } from "@/workers/queue";
 
 export async function POST() {
   const session = await auth();
@@ -31,12 +31,12 @@ export async function POST() {
     data: {
       userId,
       status: "pending",
-      platforms: ["indeed", "greenhouse"],
+      platforms: ["greenhouse", "lever", "workday", "linkedin", "career-page", "handshake"],
     },
   });
 
   // Add job to queue with retry config
-  await scrapeQueue.add(
+  await (await getScrapeQueue()).add(
     "scrape-run",
     {
       userId,

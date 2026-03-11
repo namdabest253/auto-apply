@@ -4,6 +4,10 @@ import { getRedisConnectionOptions } from "./queue";
 import { IndeedScraper } from "@/lib/scrapers/indeed";
 import { GreenhouseScraper } from "@/lib/scrapers/greenhouse";
 import { LeverScraper } from "@/lib/scrapers/lever";
+import { WorkdayScraper } from "@/lib/scrapers/workday";
+import { LinkedInScraper } from "@/lib/scrapers/linkedin";
+import { CareerPageCrawler } from "@/lib/scrapers/career-page";
+import { HandshakeScraper } from "@/lib/scrapers/handshake";
 import { filterNewJobs } from "@/lib/scrapers/dedup";
 import { prisma } from "@/lib/prisma";
 import type { SearchParams, DiscoveredJob } from "@/lib/scrapers/types";
@@ -36,12 +40,49 @@ async function processScrapeJob(job: Job<ScrapeJobData>): Promise<void> {
   const errors: Record<string, string> = {};
 
   // Indeed requires residential proxies (403/CAPTCHA from server IPs) — disabled for now
-  const scrapers = [new GreenhouseScraper(), new LeverScraper()];
+  const scrapers = [
+    new GreenhouseScraper(),
+    new LeverScraper(),
+    new WorkdayScraper(),
+    new LinkedInScraper(),
+    new CareerPageCrawler(userId),
+    new HandshakeScraper(userId),
+  ];
+
+  let totalNewJobs = 0;
 
   for (const scraper of scrapers) {
     try {
       const jobs = await scraper.discover(searchParams);
       allDiscovered.push(...jobs);
+
+      // Deduplicate and save after each scraper so progress is visible
+      const newJobs = await filterNewJobs(userId, jobs);
+      for (const discoveredJob of newJobs) {
+        await prisma.jobListing.create({
+          data: {
+            userId,
+            scrapeRunId: runId,
+            externalUrl: discoveredJob.externalUrl,
+            platform: discoveredJob.platform,
+            title: discoveredJob.title,
+            company: discoveredJob.company,
+            location: discoveredJob.location,
+            datePosted: discoveredJob.datePosted,
+            descriptionHtml: discoveredJob.descriptionHtml,
+            descriptionText: discoveredJob.descriptionText,
+            salary: discoveredJob.salary,
+            metadata: JSON.parse(JSON.stringify(discoveredJob.metadata)),
+          },
+        });
+      }
+      totalNewJobs += newJobs.length;
+
+      // Update jobsFound so the UI can show progress
+      await prisma.scrapeRun.update({
+        where: { id: runId },
+        data: { jobsFound: totalNewJobs },
+      });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : String(err);
@@ -51,29 +92,6 @@ async function processScrapeJob(job: Job<ScrapeJobData>): Promise<void> {
     }
   }
 
-  // Deduplicate against existing DB entries
-  const newJobs = await filterNewJobs(userId, allDiscovered);
-
-  // Save new jobs to database
-  for (const discoveredJob of newJobs) {
-    await prisma.jobListing.create({
-      data: {
-        userId,
-        scrapeRunId: runId,
-        externalUrl: discoveredJob.externalUrl,
-        platform: discoveredJob.platform,
-        title: discoveredJob.title,
-        company: discoveredJob.company,
-        location: discoveredJob.location,
-        datePosted: discoveredJob.datePosted,
-        descriptionHtml: discoveredJob.descriptionHtml,
-        descriptionText: discoveredJob.descriptionText,
-        salary: discoveredJob.salary,
-        metadata: JSON.parse(JSON.stringify(discoveredJob.metadata)),
-      },
-    });
-  }
-
   const duration = Math.round((Date.now() - startTime) / 1000);
 
   // Update ScrapeRun to "completed"
@@ -81,7 +99,7 @@ async function processScrapeJob(job: Job<ScrapeJobData>): Promise<void> {
     where: { id: runId },
     data: {
       status: Object.keys(errors).length > 0 ? "completed_with_errors" : "completed",
-      jobsFound: newJobs.length,
+      jobsFound: totalNewJobs,
       errors: Object.keys(errors).length > 0 ? errors : undefined,
       completedAt: new Date(),
       duration,
