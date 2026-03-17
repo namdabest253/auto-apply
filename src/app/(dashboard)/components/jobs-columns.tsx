@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpDown, CheckCircle2, Send } from "lucide-react"
+import { ArrowUpDown, CheckCircle2, Send, Loader2, AlertTriangle, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { JobListItem } from "../actions"
 
@@ -130,11 +130,37 @@ export const jobColumns: ColumnDef<JobListItem>[] = [
     header: "Status",
     cell: ({ row }) => {
       const appliedAt = row.original.appliedAt
-      if (appliedAt) {
+      const autoStatus = row.original.autoApplyStatus
+
+      if (appliedAt || autoStatus === "succeeded") {
         return (
           <Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800 gap-1">
             <CheckCircle2 className="h-3 w-3" />
             Applied
+          </Badge>
+        )
+      }
+      if (autoStatus === "queued" || autoStatus === "running") {
+        return (
+          <Badge className="bg-blue-900/30 text-blue-400 border-blue-800 gap-1">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Applying...
+          </Badge>
+        )
+      }
+      if (autoStatus === "failed") {
+        return (
+          <Badge className="bg-red-900/30 text-red-400 border-red-800 gap-1">
+            <XCircle className="h-3 w-3" />
+            Failed
+          </Badge>
+        )
+      }
+      if (autoStatus === "needs_review") {
+        return (
+          <Badge className="bg-amber-900/30 text-amber-400 border-amber-800 gap-1">
+            <AlertTriangle className="h-3 w-3" />
+            Review
           </Badge>
         )
       }

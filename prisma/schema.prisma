@@ -18,6 +18,7 @@ model User {
   profile        Profile?
   jobListings    JobListing[]
   scrapeRuns     ScrapeRun[]
+  applicationRuns ApplicationRun[]
   settings       UserSetting[]
   careerPageUrls CareerPageUrl[]
   createdAt      DateTime  @default(now())
@@ -187,12 +188,14 @@ model JobListing {
   descriptionText String?    @db.Text
   salary          String?
   metadata        Json?
-  isStale         Boolean    @default(false)
-  appliedAt       DateTime?
-  scrapeRunId     String?
-  scrapeRun       ScrapeRun? @relation(fields: [scrapeRunId], references: [id])
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  isStale           Boolean    @default(false)
+  appliedAt         DateTime?
+  autoApplyStatus   String?
+  scrapeRunId       String?
+  scrapeRun         ScrapeRun? @relation(fields: [scrapeRunId], references: [id])
+  applicationRuns   ApplicationRun[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   @@unique([userId, externalUrl])
   @@index([userId, createdAt])
@@ -219,6 +222,23 @@ model CareerPageUrl {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, url])
+}
+
+model ApplicationRun {
+  id            String     @id @default(cuid())
+  userId        String
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobListingId  String
+  jobListing    JobListing @relation(fields: [jobListingId], references: [id], onDelete: Cascade)
+  status        String     // pending | running | succeeded | failed | needs_review
+  steps         Json?      // array of { action, result, timestamp }
+  errorMessage  String?
+  startedAt     DateTime   @default(now())
+  completedAt   DateTime?
+  metadata      Json?
+
+  @@index([userId, status])
+  @@index([jobListingId])
 }
 
 model ScrapeRun {

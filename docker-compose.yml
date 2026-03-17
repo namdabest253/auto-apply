@@ -34,6 +34,24 @@ services:
       - .:/app
       - /app/node_modules
 
+  apply-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: npx tsx src/workers/apply.worker.ts
+    environment:
+      - DATABASE_URL=postgresql://autoapply:autoapply@postgres:5432/autoapply
+      - REDIS_URL=redis://redis:6379
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+
   postgres:
     image: postgres:16-alpine
     environment:

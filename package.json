@@ -11,6 +11,8 @@
     "test:watch": "vitest",
     "worker:scrape": "npx tsx src/workers/scrape.worker.ts",
     "worker:scrape:watch": "npx tsx --watch src/workers/scrape.worker.ts",
+    "worker:apply": "npx tsx src/workers/apply.worker.ts",
+    "worker:apply:watch": "npx tsx --watch src/workers/apply.worker.ts",
     "worker:discover": "./src/scripts/ai-discover-watcher.sh"
   },
   "dependencies": {

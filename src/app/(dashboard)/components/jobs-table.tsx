@@ -57,8 +57,14 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
     },
     meta: {
       onAutoApply: async (jobId: string) => {
-        await autoApplyToJob(jobId)
-        // TODO: implement auto-apply flow
+        const result = await autoApplyToJob(jobId)
+        if (result.error) {
+          console.error("Auto-apply error:", result.error)
+          return
+        }
+        // Refresh jobs to show updated status
+        const updated = await getJobs({ includeStale: showStale })
+        setJobs(updated)
       },
     } satisfies JobTableMeta,
     state: { sorting, globalFilter },

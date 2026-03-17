@@ -25,3 +25,15 @@ export async function getScrapeQueue() {
   }
   return _scrapeQueue;
 }
+
+let _applyQueue: any = null;
+
+export async function getApplyQueue() {
+  if (!_applyQueue) {
+    const { Queue } = await import("bullmq");
+    _applyQueue = new Queue("auto-apply", {
+      connection: getRedisConnectionOptions(),
+    });
+  }
+  return _applyQueue;
+}

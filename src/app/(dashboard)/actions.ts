@@ -15,6 +15,7 @@ export interface JobListItem {
   salary: string | null
   isStale: boolean
   appliedAt: Date | null
+  autoApplyStatus: string | null
 }
 
 export interface JobDetail extends JobListItem {
@@ -22,6 +23,15 @@ export interface JobDetail extends JobListItem {
   descriptionText: string | null
   metadata: unknown
   createdAt: Date
+}
+
+export interface ApplicationRunStatus {
+  id: string
+  status: string
+  steps: unknown
+  errorMessage: string | null
+  startedAt: Date
+  completedAt: Date | null
 }
 
 export interface GreenhouseCompanyEntry {
@@ -109,6 +119,7 @@ export async function getJobs(
       datePosted: true,
       salary: true,
       appliedAt: true,
+      autoApplyStatus: true,
     },
   })
 
@@ -116,6 +127,7 @@ export async function getJobs(
     ...job,
     isStale: job.datePosted ? job.datePosted < staleThreshold : false,
     appliedAt: job.appliedAt ?? null,
+    autoApplyStatus: job.autoApplyStatus ?? null,
   }))
 }
 
@@ -144,6 +156,7 @@ export async function getJobDetail(jobId: string): Promise<JobDetail | null> {
     createdAt: job.createdAt,
     isStale: job.datePosted ? job.datePosted < staleThreshold : false,
     appliedAt: job.appliedAt,
+    autoApplyStatus: job.autoApplyStatus ?? null,
   }
 }
 
@@ -259,10 +272,127 @@ export async function unmarkJobApplied(jobId: string): Promise<void> {
 
 export async function autoApplyToJob(
   jobId: string
-): Promise<{ status: string }> {
-  // Skeleton - not yet implemented
-  await getAuthUserId()
-  return { status: "not_implemented" }
+): Promise<{ applicationRunId?: string; error?: string }> {
+  const userId = await getAuthUserId()
+
+  // Validate job exists and belongs to user
+  const job = await prisma.jobListing.findFirst({
+    where: { id: jobId, userId },
+  })
+  if (!job) {
+    return { error: "Job not found" }
+  }
+
+  // Don't allow if already queued or running
+  if (job.autoApplyStatus === "queued" || job.autoApplyStatus === "running") {
+    return { error: "Auto-apply already in progress" }
+  }
+
+  // Load full profile with relations
+  const profile = await prisma.profile.findUnique({
+    where: { userId },
+    include: {
+      education: { orderBy: { sortOrder: "asc" } },
+      workHistory: { orderBy: { sortOrder: "asc" } },
+      skills: true,
+      qaEntries: { orderBy: { sortOrder: "asc" } },
+    },
+  })
+
+  if (!profile) {
+    return { error: "Complete your profile first" }
+  }
+  if (!profile.resumeFilePath) {
+    return { error: "Upload a resume first" }
+  }
+
+  // Create ApplicationRun record
+  const applicationRun = await prisma.applicationRun.create({
+    data: {
+      userId,
+      jobListingId: jobId,
+      status: "pending",
+    },
+  })
+
+  // Set job status to queued
+  await prisma.jobListing.update({
+    where: { id: jobId },
+    data: { autoApplyStatus: "queued" },
+  })
+
+  // Serialize profile data for the worker
+  const serializedProfile = {
+    contactName: profile.contactName,
+    contactEmail: profile.contactEmail,
+    contactPhone: profile.contactPhone,
+    contactLinkedIn: profile.contactLinkedIn,
+    contactWebsite: profile.contactWebsite,
+    contactLocation: profile.contactLocation,
+    resumeFilePath: profile.resumeFilePath,
+    otherText: profile.otherText,
+    education: profile.education.map((e) => ({
+      school: e.school,
+      degree: e.degree,
+      fieldOfStudy: e.fieldOfStudy,
+      startDate: e.startDate,
+      endDate: e.endDate,
+      gpa: e.gpa,
+    })),
+    workHistory: profile.workHistory.map((w) => ({
+      company: w.company,
+      title: w.title,
+      startDate: w.startDate,
+      endDate: w.endDate,
+      bullets: w.bullets,
+    })),
+    skills: profile.skills.map((s) => ({ name: s.name })),
+    qaEntries: profile.qaEntries.map((q) => ({
+      question: q.question,
+      answer: q.answer,
+    })),
+  }
+
+  // Enqueue to auto-apply queue
+  const { getApplyQueue } = await import("@/workers/queue")
+  await (await getApplyQueue()).add(
+    "auto-apply",
+    {
+      userId,
+      applicationRunId: applicationRun.id,
+      jobListingId: jobId,
+      externalUrl: job.externalUrl,
+      profile: serializedProfile,
+    },
+    {
+      attempts: 2,
+      backoff: { type: "fixed", delay: 60000 },
+    }
+  )
+
+  return { applicationRunId: applicationRun.id }
+}
+
+export async function getApplicationRunStatus(
+  jobId: string
+): Promise<ApplicationRunStatus | null> {
+  const userId = await getAuthUserId()
+
+  const run = await prisma.applicationRun.findFirst({
+    where: { jobListingId: jobId, userId },
+    orderBy: { startedAt: "desc" },
+  })
+
+  if (!run) return null
+
+  return {
+    id: run.id,
+    status: run.status,
+    steps: run.steps,
+    errorMessage: run.errorMessage,
+    startedAt: run.startedAt,
+    completedAt: run.completedAt,
+  }
 }
 
 export async function findCoffeeChatContacts(

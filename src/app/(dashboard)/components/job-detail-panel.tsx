@@ -10,9 +10,92 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { ExternalLink, MapPin, Calendar, Building2, DollarSign, Loader2, CheckCircle2, Send, Coffee } from "lucide-react"
+import { ExternalLink, MapPin, Calendar, Building2, DollarSign, Loader2, CheckCircle2, Send, Coffee, AlertTriangle } from "lucide-react"
 import type { JobDetail } from "../actions"
 import { getJobDetail, markJobApplied, unmarkJobApplied, autoApplyToJob, findCoffeeChatContacts } from "../actions"
+
+function AutoApplyButton({
+  job,
+  onStatusChange,
+}: {
+  job: JobDetail
+  onStatusChange: (status: string) => void
+}) {
+  const [submitting, setSubmitting] = useState(false)
+  const status = job.autoApplyStatus
+
+  if (status === "succeeded") {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className="border-emerald-800 text-emerald-400"
+        disabled
+      >
+        <CheckCircle2 className="h-3 w-3" />
+        Auto-Applied
+      </Button>
+    )
+  }
+
+  if (status === "queued" || status === "running") {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className="border-blue-800 text-blue-400"
+        disabled
+      >
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Applying...
+      </Button>
+    )
+  }
+
+  if (status === "needs_review") {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        className="border-amber-800 text-amber-400"
+        disabled
+      >
+        <AlertTriangle className="h-3 w-3" />
+        Review Needed
+      </Button>
+    )
+  }
+
+  // null or failed — show actionable button
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      className="border-blue-800 text-blue-400"
+      disabled={submitting}
+      onClick={async () => {
+        setSubmitting(true)
+        try {
+          const result = await autoApplyToJob(job.id)
+          if (result.error) {
+            console.error("Auto-apply error:", result.error)
+          } else {
+            onStatusChange("queued")
+          }
+        } finally {
+          setSubmitting(false)
+        }
+      }}
+    >
+      {submitting ? (
+        <Loader2 className="h-3 w-3 animate-spin" />
+      ) : (
+        <Send className="h-3 w-3" />
+      )}
+      {status === "failed" ? "Retry Auto Apply" : "Auto Apply"}
+    </Button>
+  )
+}
 
 interface JobDetailPanelProps {
   jobId: string | null
@@ -160,18 +243,13 @@ export function JobDetailPanel({ jobId, onClose, onJobUpdated }: JobDetailPanelP
                   </Button>
                 )}
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-blue-800 text-blue-400"
-                  onClick={async () => {
-                    await autoApplyToJob(job.id)
-                    // TODO: implement auto-apply flow
+                <AutoApplyButton
+                  job={job}
+                  onStatusChange={(status) => {
+                    setJob({ ...job, autoApplyStatus: status })
+                    onJobUpdated?.()
                   }}
-                >
-                  <Send className="h-3 w-3" />
-                  Auto Apply
-                </Button>
+                />
 
                 <Button
                   variant="outline"
