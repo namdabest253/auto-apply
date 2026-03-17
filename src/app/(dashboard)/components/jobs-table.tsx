@@ -21,10 +21,10 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { jobColumns } from "./jobs-columns"
+import { jobColumns, type JobTableMeta } from "./jobs-columns"
 import { JobDetailPanel } from "./job-detail-panel"
 import type { JobListItem } from "../actions"
-import { getJobs } from "../actions"
+import { getJobs, autoApplyToJob } from "../actions"
 
 interface JobsTableProps {
   initialJobs: JobListItem[]
@@ -55,6 +55,12 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
       const location = (row.getValue("location") as string)?.toLowerCase() ?? ""
       return title.includes(search) || company.includes(search) || location.includes(search)
     },
+    meta: {
+      onAutoApply: async (jobId: string) => {
+        await autoApplyToJob(jobId)
+        // TODO: implement auto-apply flow
+      },
+    } satisfies JobTableMeta,
     state: { sorting, globalFilter },
     initialState: {
       pagination: { pageSize: 20 },

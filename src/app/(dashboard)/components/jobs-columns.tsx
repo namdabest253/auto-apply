@@ -2,9 +2,13 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpDown, CheckCircle2 } from "lucide-react"
+import { ArrowUpDown, CheckCircle2, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { JobListItem } from "../actions"
+
+export interface JobTableMeta {
+  onAutoApply?: (jobId: string) => void
+}
 
 function formatRelativeDate(date: Date | null): string {
   if (!date) return "Unknown"
@@ -138,6 +142,27 @@ export const jobColumns: ColumnDef<JobListItem>[] = [
         <Badge variant="outline" className="text-zinc-500 border-zinc-700 gap-1">
           Not Applied
         </Badge>
+      )
+    },
+  },
+  {
+    id: "actions",
+    header: "",
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as JobTableMeta | undefined
+      return (
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 text-xs border-blue-800 text-blue-400 hover:bg-blue-900/30"
+          onClick={(e) => {
+            e.stopPropagation()
+            meta?.onAutoApply?.(row.original.id)
+          }}
+        >
+          <Send className="h-3 w-3" />
+          Auto Apply
+        </Button>
       )
     },
   },
