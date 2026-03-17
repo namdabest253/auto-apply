@@ -1,6 +1,6 @@
 import type { ScraperAdapter, SearchParams, DiscoveredJob } from "./types";
 import { LEVER_COMPANIES } from "./constants";
-import { isInternshipRole } from "./filters";
+import { isInternshipRole, isUSLocation } from "./filters";
 import { randomDelay } from "./stealth";
 
 const LEVER_API = "https://api.lever.co/v0/postings";
@@ -74,12 +74,13 @@ export class LeverScraper implements ScraperAdapter {
           },
         }));
 
-        // Filter for internship roles
-        const filtered = jobs.filter((j) =>
-          isInternshipRole(
-            j.title,
-            (j.metadata as any)?.team || (j.metadata as any)?.department
-          )
+        // Filter for US internship roles
+        const filtered = jobs.filter(
+          (j) =>
+            isInternshipRole(
+              j.title,
+              (j.metadata as any)?.team || (j.metadata as any)?.department
+            ) && isUSLocation(j.location)
         );
 
         allJobs.push(...filtered);

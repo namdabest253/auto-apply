@@ -6,6 +6,7 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   getPaginationRowModel,
+  getFilteredRowModel,
   flexRender,
   type SortingState,
 } from "@tanstack/react-table"
@@ -18,14 +19,15 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { jobColumns } from "./jobs-columns"
 import { JobDetailPanel } from "./job-detail-panel"
-import type { JobWithStale } from "../actions"
+import type { JobListItem } from "../actions"
 import { getJobs } from "../actions"
 
 interface JobsTableProps {
-  initialJobs: JobWithStale[]
+  initialJobs: JobListItem[]
 }
 
 export function JobsTable({ initialJobs }: JobsTableProps) {
@@ -33,17 +35,27 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: "datePosted", desc: true },
   ])
-  const [selectedJob, setSelectedJob] = useState<JobWithStale | null>(null)
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
   const [showStale, setShowStale] = useState(false)
+  const [globalFilter, setGlobalFilter] = useState("")
 
   const table = useReactTable({
     data: jobs,
     columns: jobColumns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
-    state: { sorting },
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: (row, _columnId, filterValue: string) => {
+      const search = filterValue.toLowerCase()
+      const title = (row.getValue("title") as string)?.toLowerCase() ?? ""
+      const company = (row.getValue("company") as string)?.toLowerCase() ?? ""
+      const location = (row.getValue("location") as string)?.toLowerCase() ?? ""
+      return title.includes(search) || company.includes(search) || location.includes(search)
+    },
+    state: { sorting, globalFilter },
     initialState: {
       pagination: { pageSize: 20 },
     },
@@ -56,7 +68,6 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
       const updated = await getJobs({ includeStale: newShowStale })
       setJobs(updated)
     } catch {
-      // revert on error
       setShowStale(!newShowStale)
     }
   }
@@ -74,6 +85,12 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
+        <Input
+          placeholder="Filter jobs (e.g. intern, remote, Google)..."
+          value={globalFilter}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          className="max-w-sm h-8 text-sm bg-zinc-900 border-zinc-700 text-zinc-200 placeholder:text-zinc-500"
+        />
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
@@ -85,6 +102,9 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
             Show stale jobs (30+ days)
           </Label>
         </label>
+        <span className="text-xs text-zinc-500 ml-auto">
+          {jobs.length.toLocaleString()} jobs
+        </span>
       </div>
 
       <div className="rounded-md border border-zinc-800">
@@ -110,7 +130,7 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  onClick={() => setSelectedJob(row.original)}
+                  onClick={() => setSelectedJobId(row.original.id)}
                   className="cursor-pointer border-zinc-800 hover:bg-zinc-900"
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -140,6 +160,7 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
       {/* Pagination */}
       <div className="flex items-center justify-between">
         <span className="text-xs text-zinc-500">
+          {globalFilter && `${table.getFilteredRowModel().rows.length} of ${jobs.length} jobs · `}
           Page {table.getState().pagination.pageIndex + 1} of{" "}
           {table.getPageCount()}
         </span>
@@ -164,8 +185,12 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
       </div>
 
       <JobDetailPanel
-        job={selectedJob}
-        onClose={() => setSelectedJob(null)}
+        jobId={selectedJobId}
+        onClose={() => setSelectedJobId(null)}
+        onJobUpdated={async () => {
+          const updated = await getJobs({ includeStale: showStale })
+          setJobs(updated)
+        }}
       />
     </div>
   )

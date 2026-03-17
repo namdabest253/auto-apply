@@ -1,7 +1,7 @@
-FROM oven/bun:1 AS deps
+FROM node:20-alpine AS deps
 WORKDIR /app
-COPY package.json bun.lockb ./
-RUN bun install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci --legacy-peer-deps
 
 FROM node:20-alpine AS runner
 WORKDIR /app

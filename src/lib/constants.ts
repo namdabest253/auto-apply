@@ -21,6 +21,35 @@ export const ROLE_TYPES = [
   "UX/UI Design",
 ] as const satisfies readonly string[]
 
+export const LOCATIONS = [
+  "Remote",
+  "Hybrid",
+  "On-Site",
+  "Atlanta, GA",
+  "Austin, TX",
+  "Boston, MA",
+  "Charlotte, NC",
+  "Chicago, IL",
+  "Dallas, TX",
+  "Denver, CO",
+  "Detroit, MI",
+  "Houston, TX",
+  "Los Angeles, CA",
+  "Miami, FL",
+  "Minneapolis, MN",
+  "Nashville, TN",
+  "New York, NY",
+  "Philadelphia, PA",
+  "Phoenix, AZ",
+  "Portland, OR",
+  "Raleigh, NC",
+  "San Diego, CA",
+  "San Francisco, CA",
+  "San Jose, CA",
+  "Seattle, WA",
+  "Washington, DC",
+] as const satisfies readonly string[]
+
 export const INDUSTRIES = [
   "Agriculture",
   "Automotive",

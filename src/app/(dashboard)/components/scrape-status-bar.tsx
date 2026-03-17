@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Loader2, CheckCircle2, XCircle, X } from "lucide-react"
+import { Loader2, CheckCircle2, XCircle, X, Square } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { cancelScrapeRun } from "@/app/(dashboard)/actions"
 
 interface ScrapeRunData {
   id: string
@@ -86,17 +87,47 @@ export function ScrapeStatusBar({ initialRun }: ScrapeStatusBarProps) {
     return null
   }
 
+  const platformMap: Record<string, string> = {
+    greenhouse: "Greenhouse",
+    lever: "Lever",
+    workday: "Workday",
+    linkedin: "LinkedIn",
+    indeed: "Indeed",
+    "career-page": "Career Pages",
+    handshake: "Handshake",
+    "ai-discovery": "AI Discovery",
+  }
   const platformNames = run.platforms
-    .map((p) => (p === "greenhouse" ? "Greenhouse" : "Indeed"))
+    .map((p) => platformMap[p] ?? p)
     .join(", ")
 
   if (run.status === "pending" || run.status === "running") {
     return (
-      <div className="flex items-center gap-3 rounded-md bg-indigo-950/50 border border-indigo-800/50 px-4 py-3">
-        <Loader2 className="h-4 w-4 animate-spin text-indigo-400" />
-        <span className="text-sm text-indigo-300">
-          Discovering jobs from {platformNames}...
-        </span>
+      <div className="flex items-center justify-between rounded-md bg-indigo-950/50 border border-indigo-800/50 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <Loader2 className="h-4 w-4 animate-spin text-indigo-400" />
+          <span className="text-sm text-indigo-300">
+            Discovering jobs from {platformNames}...
+          </span>
+          {run.jobsFound > 0 && (
+            <span className="text-xs font-medium text-indigo-400 bg-indigo-900/50 px-2 py-0.5 rounded-full">
+              {run.jobsFound} found
+            </span>
+          )}
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={async () => {
+            await cancelScrapeRun(run.id)
+            setRun({ ...run, status: "failed", completedAt: new Date().toISOString() })
+            router.refresh()
+          }}
+          className="h-7 px-2 text-indigo-400 hover:text-indigo-200 hover:bg-indigo-900/50"
+        >
+          <Square className="h-3 w-3 mr-1 fill-current" />
+          <span className="text-xs">Stop</span>
+        </Button>
       </div>
     )
   }
@@ -111,7 +142,7 @@ export function ScrapeStatusBar({ initialRun }: ScrapeStatusBarProps) {
           </span>
           {run.duration && (
             <span className="text-xs text-green-600">
-              in {Math.round(run.duration / 1000)}s
+              in {run.duration}s
             </span>
           )}
         </div>

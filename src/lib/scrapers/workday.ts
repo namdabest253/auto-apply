@@ -49,15 +49,14 @@ export class WorkdayScraper implements ScraperAdapter {
         body,
       });
 
-      // Fall back to browser on 403/429
-      if (res.status === 403 || res.status === 429) {
-        console.warn(
-          `[WorkdayScraper] API blocked for ${company.name} (${res.status}), falling back to browser`
-        );
-        return this.fetchCompanyJobsBrowser(company);
-      }
-
+      // Fall back to browser on block/error responses
       if (!res.ok) {
+        if (res.status === 403 || res.status === 429 || res.status === 422 || res.status === 500) {
+          console.warn(
+            `[WorkdayScraper] API failed for ${company.name} (${res.status}), falling back to browser`
+          );
+          return this.fetchCompanyJobsBrowser(company);
+        }
         console.warn(
           `[WorkdayScraper] Failed to fetch ${company.name} (${res.status}), skipping`
         );
@@ -118,7 +117,7 @@ export class WorkdayScraper implements ScraperAdapter {
       const page = await stealth.context.newPage();
 
       try {
-        const careerUrl = `https://${company.domain}/${company.slug}/${company.site}`;
+        const careerUrl = `https://${company.domain}/en-US/${company.site}`;
         await page.goto(careerUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
 
         // Wait for job cards to render

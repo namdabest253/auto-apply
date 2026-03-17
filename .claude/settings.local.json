@@ -6,7 +6,15 @@
       "Bash(grep:*)",
       "Bash(test:*)",
       "Bash(ls:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "WebFetch(domain:www.interninsider.me)",
+      "WebFetch(domain:aiapply.co)",
+      "WebFetch(domain:careerswift.ai)",
+      "WebFetch(domain:www.intern-list.com)",
+      "Bash(npx tsx:*)",
+      "WebFetch(domain:www.google.com)",
+      "Bash(npx prisma:*)",
+      "Read(//tmp/**)"
     ]
   }
 }

@@ -2,9 +2,9 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUpDown } from "lucide-react"
+import { ArrowUpDown, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import type { JobWithStale } from "../actions"
+import type { JobListItem } from "../actions"
 
 function formatRelativeDate(date: Date | null): string {
   if (!date) return "Unknown"
@@ -22,7 +22,7 @@ function formatRelativeDate(date: Date | null): string {
   return `${Math.floor(days / 30)}mo ago`
 }
 
-export const jobColumns: ColumnDef<JobWithStale>[] = [
+export const jobColumns: ColumnDef<JobListItem>[] = [
   {
     accessorKey: "title",
     header: ({ column }) => (
@@ -117,6 +117,26 @@ export const jobColumns: ColumnDef<JobWithStale>[] = [
           }`}
         >
           {platform === "greenhouse" ? "Greenhouse" : "Indeed"}
+        </Badge>
+      )
+    },
+  },
+  {
+    accessorKey: "appliedAt",
+    header: "Status",
+    cell: ({ row }) => {
+      const appliedAt = row.original.appliedAt
+      if (appliedAt) {
+        return (
+          <Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800 gap-1">
+            <CheckCircle2 className="h-3 w-3" />
+            Applied
+          </Badge>
+        )
+      }
+      return (
+        <Badge variant="outline" className="text-zinc-500 border-zinc-700 gap-1">
+          Not Applied
         </Badge>
       )
     },

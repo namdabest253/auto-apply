@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { writeFile, mkdir } from "node:fs/promises"
 import { join } from "node:path"
-import { PDFParse } from "pdf-parse"
-import * as mammoth from "mammoth"
+import { createRequire } from "node:module"
 import { parseResumeText } from "@/lib/resume-parser"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
+
+const nodeRequire = createRequire(import.meta.url)
 
 const VALID_TYPES = [
   "application/pdf",
@@ -52,14 +53,14 @@ export async function POST(request: NextRequest) {
     const filePath = join(uploadDir, filename)
     await writeFile(filePath, buffer)
 
-    // Extract text based on file type
+    // Extract text based on file type (dynamic require to avoid webpack ESM bundling issues)
     let rawText: string
     if (file.type === "application/pdf") {
-      const pdf = new PDFParse({ data: new Uint8Array(buffer) })
-      const result = await pdf.getText()
+      const pdfParse = nodeRequire("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>
+      const result = await pdfParse(buffer)
       rawText = result.text
-      await pdf.destroy()
     } else {
+      const mammoth = nodeRequire("mammoth") as typeof import("mammoth")
       const result = await mammoth.extractRawText({ buffer })
       rawText = result.value
     }

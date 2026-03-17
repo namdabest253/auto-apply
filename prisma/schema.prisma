@@ -188,6 +188,7 @@ model JobListing {
   salary          String?
   metadata        Json?
   isStale         Boolean    @default(false)
+  appliedAt       DateTime?
   scrapeRunId     String?
   scrapeRun       ScrapeRun? @relation(fields: [scrapeRunId], references: [id])
   createdAt       DateTime   @default(now())

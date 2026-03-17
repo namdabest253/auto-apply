@@ -1,4 +1,3 @@
-import { Queue } from "bullmq";
 import type { ConnectionOptions } from "bullmq";
 
 /**
@@ -15,6 +14,14 @@ export function getRedisConnectionOptions(): ConnectionOptions {
   };
 }
 
-export const scrapeQueue = new Queue("scrape", {
-  connection: getRedisConnectionOptions(),
-});
+let _scrapeQueue: any = null;
+
+export async function getScrapeQueue() {
+  if (!_scrapeQueue) {
+    const { Queue } = await import("bullmq");
+    _scrapeQueue = new Queue("scrape", {
+      connection: getRedisConnectionOptions(),
+    });
+  }
+  return _scrapeQueue;
+}

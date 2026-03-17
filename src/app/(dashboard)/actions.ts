@@ -2,26 +2,26 @@
 
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { scrapeQueue } from "@/workers/queue"
 import { GREENHOUSE_COMPANIES } from "@/lib/scrapers/constants"
 
-export interface JobWithStale {
+export interface JobListItem {
   id: string
-  userId: string
   externalUrl: string
   platform: string
   title: string
   company: string
   location: string | null
   datePosted: Date | null
+  salary: string | null
+  isStale: boolean
+  appliedAt: Date | null
+}
+
+export interface JobDetail extends JobListItem {
   descriptionHtml: string | null
   descriptionText: string | null
-  salary: string | null
   metadata: unknown
-  isStale: boolean
-  scrapeRunId: string | null
   createdAt: Date
-  updatedAt: Date
 }
 
 export interface GreenhouseCompanyEntry {
@@ -63,7 +63,8 @@ export async function triggerScrape(): Promise<{ runId?: string; error?: string 
   })
 
   // Add job to queue
-  await scrapeQueue.add(
+  const { getScrapeQueue } = await import("@/workers/queue")
+  await (await getScrapeQueue()).add(
     "scrape-run",
     {
       userId,
@@ -81,7 +82,7 @@ export async function triggerScrape(): Promise<{ runId?: string; error?: string 
 
 export async function getJobs(
   options?: { includeStale?: boolean }
-): Promise<JobWithStale[]> {
+): Promise<JobListItem[]> {
   const userId = await getAuthUserId()
   const includeStale = options?.includeStale ?? false
   const staleThreshold = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -98,12 +99,52 @@ export async function getJobs(
   const jobs = await prisma.jobListing.findMany({
     where,
     orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      externalUrl: true,
+      platform: true,
+      title: true,
+      company: true,
+      location: true,
+      datePosted: true,
+      salary: true,
+      appliedAt: true,
+    },
   })
 
   return jobs.map((job) => ({
     ...job,
     isStale: job.datePosted ? job.datePosted < staleThreshold : false,
+    appliedAt: job.appliedAt ?? null,
   }))
+}
+
+export async function getJobDetail(jobId: string): Promise<JobDetail | null> {
+  const userId = await getAuthUserId()
+  const staleThreshold = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+
+  const job = await prisma.jobListing.findFirst({
+    where: { id: jobId, userId },
+  })
+
+  if (!job) return null
+
+  return {
+    id: job.id,
+    externalUrl: job.externalUrl,
+    platform: job.platform,
+    title: job.title,
+    company: job.company,
+    location: job.location,
+    datePosted: job.datePosted,
+    salary: job.salary,
+    descriptionHtml: job.descriptionHtml,
+    descriptionText: job.descriptionText,
+    metadata: job.metadata,
+    createdAt: job.createdAt,
+    isStale: job.datePosted ? job.datePosted < staleThreshold : false,
+    appliedAt: job.appliedAt,
+  }
 }
 
 export async function getLatestScrapeRun() {
@@ -112,6 +153,16 @@ export async function getLatestScrapeRun() {
   return prisma.scrapeRun.findFirst({
     where: { userId },
     orderBy: { startedAt: "desc" },
+  })
+}
+
+
+export async function cancelScrapeRun(runId: string): Promise<void> {
+  const userId = await getAuthUserId()
+
+  await prisma.scrapeRun.updateMany({
+    where: { id: runId, userId, status: { in: ["pending", "running"] } },
+    data: { status: "failed", completedAt: new Date() },
   })
 }
 
@@ -181,6 +232,45 @@ export async function addGreenhouseCompany(
   })
 
   return getGreenhouseCompanies()
+}
+
+export async function markJobApplied(
+  jobId: string
+): Promise<{ appliedAt: Date }> {
+  const userId = await getAuthUserId()
+
+  const job = await prisma.jobListing.update({
+    where: { id: jobId, userId },
+    data: { appliedAt: new Date() },
+    select: { appliedAt: true },
+  })
+
+  return { appliedAt: job.appliedAt! }
+}
+
+export async function unmarkJobApplied(jobId: string): Promise<void> {
+  const userId = await getAuthUserId()
+
+  await prisma.jobListing.update({
+    where: { id: jobId, userId },
+    data: { appliedAt: null },
+  })
+}
+
+export async function autoApplyToJob(
+  jobId: string
+): Promise<{ status: string }> {
+  // Skeleton - not yet implemented
+  await getAuthUserId()
+  return { status: "not_implemented" }
+}
+
+export async function findCoffeeChatContacts(
+  company: string
+): Promise<{ status: string; contacts: Array<{ name: string; role: string; profileUrl: string }> }> {
+  // Skeleton - not yet implemented
+  await getAuthUserId()
+  return { status: "not_implemented", contacts: [] }
 }
 
 export async function removeGreenhouseCompany(

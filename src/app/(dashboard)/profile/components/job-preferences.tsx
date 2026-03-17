@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { TagInput } from "./tag-input"
 import { saveJobPreferences } from "../actions"
-import { ROLE_TYPES, INDUSTRIES } from "@/lib/constants"
+import { LOCATIONS, ROLE_TYPES, INDUSTRIES } from "@/lib/constants"
 import { X } from "lucide-react"
 
 interface JobPreferencesProps {
@@ -134,14 +134,12 @@ export function JobPreferences({ preferences }: JobPreferencesProps) {
           <CardTitle>Job Preferences</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label>Locations</Label>
-            <TagInput
-              tags={locations}
-              onTagsChange={setLocations}
-              placeholder="Add location (e.g. New York, Remote)"
-            />
-          </div>
+          <MultiSelect
+            label="Locations"
+            options={LOCATIONS}
+            selected={locations}
+            onSelectedChange={setLocations}
+          />
 
           <MultiSelect
             label="Role Types"

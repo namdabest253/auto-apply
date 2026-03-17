@@ -1,6 +1,6 @@
 import type { ScraperAdapter, SearchParams, DiscoveredJob } from "./types";
 import { GREENHOUSE_COMPANIES } from "./constants";
-import { isInternshipRole } from "./filters";
+import { isInternshipRole, isUSLocation } from "./filters";
 import { randomDelay } from "./stealth";
 
 const GREENHOUSE_API = "https://boards-api.greenhouse.io/v1/boards";
@@ -56,14 +56,15 @@ export class GreenhouseScraper implements ScraperAdapter {
           },
         }));
 
-        // Filter for internship roles
-        const filtered = jobs.filter((j) =>
-          isInternshipRole(
-            j.title,
-            ((j.metadata as any)?.departments || [])
-              .map((d: any) => d.name)
-              .join(" ")
-          )
+        // Filter for US internship roles
+        const filtered = jobs.filter(
+          (j) =>
+            isInternshipRole(
+              j.title,
+              ((j.metadata as any)?.departments || [])
+                .map((d: any) => d.name)
+                .join(" ")
+            ) && isUSLocation(j.location)
         );
 
         allJobs.push(...filtered);
