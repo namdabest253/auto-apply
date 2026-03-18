@@ -1,0 +1,8 @@
+{
+  "action": "wait",
+  "selector": null,
+  "value": null,
+  "ms": 2000,
+  "description": "Wait for the page to load.",
+  "reason": null
+}

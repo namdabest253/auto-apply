@@ -13,6 +13,13 @@ export interface SerializedProfile {
   contactLinkedIn: string | null;
   contactWebsite: string | null;
   contactLocation: string | null;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
+  country: string | null;
+  workdayPassword: string | null;
   resumeFilePath: string | null;
   otherText: string | null;
   education: Array<{
@@ -48,15 +55,14 @@ export interface InteractiveElement {
   options?: Array<{ value: string; text: string }>;
 }
 
-export type AgentAction =
-  | { action: "click"; selector: string; description: string }
-  | { action: "fill"; selector: string; value: string; description: string }
-  | { action: "select"; selector: string; value: string; description: string }
-  | { action: "upload_file"; selector: string; description: string }
-  | { action: "submit"; selector: string; description: string }
-  | { action: "wait"; ms: number; description: string }
-  | { action: "done"; description: string }
-  | { action: "needs_review"; reason: string };
+export interface AgentAction {
+  action: "click" | "fill" | "select" | "upload_file" | "submit" | "wait" | "done" | "needs_review";
+  selector: string | null;
+  value: string | null;
+  ms: number | null;
+  description: string | null;
+  reason: string | null;
+}
 
 export interface StepLog {
   step: number;

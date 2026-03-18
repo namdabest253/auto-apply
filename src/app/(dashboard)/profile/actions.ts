@@ -37,6 +37,13 @@ export async function saveContactInfo(data: {
   linkedIn?: string
   website?: string
   location?: string
+  addressLine1?: string
+  addressLine2?: string
+  city?: string
+  state?: string
+  zipCode?: string
+  country?: string
+  workdayPassword?: string
 }) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
@@ -52,6 +59,13 @@ export async function saveContactInfo(data: {
       contactLinkedIn: validated.linkedIn || null,
       contactWebsite: validated.website || null,
       contactLocation: validated.location || null,
+      addressLine1: validated.addressLine1 || null,
+      addressLine2: validated.addressLine2 || null,
+      city: validated.city || null,
+      state: validated.state || null,
+      zipCode: validated.zipCode || null,
+      country: validated.country || null,
+      workdayPassword: validated.workdayPassword || null,
     },
     create: {
       userId: session.user.id,
@@ -61,6 +75,13 @@ export async function saveContactInfo(data: {
       contactLinkedIn: validated.linkedIn || null,
       contactWebsite: validated.website || null,
       contactLocation: validated.location || null,
+      addressLine1: validated.addressLine1 || null,
+      addressLine2: validated.addressLine2 || null,
+      city: validated.city || null,
+      state: validated.state || null,
+      zipCode: validated.zipCode || null,
+      country: validated.country || null,
+      workdayPassword: validated.workdayPassword || null,
     },
   })
 
@@ -430,6 +451,55 @@ export async function deleteQAEntry(id: string) {
 
   await prisma.qAEntry.delete({ where: { id } })
   revalidatePath("/profile")
+}
+
+const DEFAULT_QA_ENTRIES = [
+  { question: "Are you authorized to work in the United States?", answer: "" },
+  { question: "Will you now or in the future require sponsorship for employment visa status?", answer: "" },
+  { question: "Are you a U.S. citizen?", answer: "" },
+  { question: "What is your gender?", answer: "" },
+  { question: "What is your race/ethnicity?", answer: "" },
+  { question: "Are you a veteran?", answer: "" },
+  { question: "Do you have a disability?", answer: "" },
+  { question: "Are you 18 years of age or older?", answer: "Yes" },
+  { question: "What is your desired salary?", answer: "" },
+  { question: "What is your earliest start date?", answer: "" },
+  { question: "Are you willing to relocate?", answer: "" },
+  { question: "Have you previously worked for this company?", answer: "No" },
+  { question: "How did you hear about this position?", answer: "Online job board" },
+  { question: "Do you have a valid driver's license?", answer: "" },
+  { question: "Have you ever been convicted of a felony?", answer: "No" },
+]
+
+export async function populateDefaultQA(): Promise<{ added: number }> {
+  const profileId = await getProfileId()
+
+  // Get existing questions to avoid duplicates
+  const existing = await prisma.qAEntry.findMany({
+    where: { profileId },
+    select: { question: true },
+  })
+  const existingQuestions = new Set(existing.map((e) => e.question.toLowerCase()))
+
+  const toAdd = DEFAULT_QA_ENTRIES.filter(
+    (entry) => !existingQuestions.has(entry.question.toLowerCase())
+  )
+
+  const currentCount = await prisma.qAEntry.count({ where: { profileId } })
+
+  for (let i = 0; i < toAdd.length; i++) {
+    await prisma.qAEntry.create({
+      data: {
+        profileId,
+        question: toAdd[i].question,
+        answer: toAdd[i].answer,
+        sortOrder: currentCount + i,
+      },
+    })
+  }
+
+  revalidatePath("/profile")
+  return { added: toAdd.length }
 }
 
 // Career Page URL management

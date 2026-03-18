@@ -329,6 +329,13 @@ export async function autoApplyToJob(
     contactLinkedIn: profile.contactLinkedIn,
     contactWebsite: profile.contactWebsite,
     contactLocation: profile.contactLocation,
+    addressLine1: profile.addressLine1,
+    addressLine2: profile.addressLine2,
+    city: profile.city,
+    state: profile.state,
+    zipCode: profile.zipCode,
+    country: profile.country,
+    workdayPassword: profile.workdayPassword,
     resumeFilePath: profile.resumeFilePath,
     otherText: profile.otherText,
     education: profile.education.map((e) => ({
@@ -393,6 +400,41 @@ export async function getApplicationRunStatus(
     startedAt: run.startedAt,
     completedAt: run.completedAt,
   }
+}
+
+export async function cancelAutoApply(
+  jobId: string
+): Promise<{ success: boolean }> {
+  const userId = await getAuthUserId()
+
+  // Find the active run
+  const run = await prisma.applicationRun.findFirst({
+    where: {
+      jobListingId: jobId,
+      userId,
+      status: { in: ["pending", "running", "queued"] },
+    },
+    orderBy: { startedAt: "desc" },
+  })
+
+  if (!run) return { success: false }
+
+  // Mark as failed/cancelled
+  await prisma.applicationRun.update({
+    where: { id: run.id },
+    data: {
+      status: "failed",
+      errorMessage: "Cancelled by user",
+      completedAt: new Date(),
+    },
+  })
+
+  await prisma.jobListing.update({
+    where: { id: jobId },
+    data: { autoApplyStatus: "failed" },
+  })
+
+  return { success: true }
 }
 
 export async function findCoffeeChatContacts(

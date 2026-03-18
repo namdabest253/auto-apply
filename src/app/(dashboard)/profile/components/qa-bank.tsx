@@ -21,8 +21,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { saveQAEntry, deleteQAEntry } from "../actions"
-import { Pencil, Trash2, Plus } from "lucide-react"
+import { saveQAEntry, deleteQAEntry, populateDefaultQA } from "../actions"
+import { Pencil, Trash2, Plus, ListChecks } from "lucide-react"
 
 interface QAEntry {
   id: string
@@ -98,6 +98,7 @@ export function QABank({ entries }: QABankProps) {
   const [adding, setAdding] = useState(false)
   const [deleteDialogId, setDeleteDialogId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [populating, setPopulating] = useState(false)
 
   const handleDelete = async (id: string) => {
     setDeleting(true)
@@ -205,14 +206,32 @@ export function QABank({ entries }: QABankProps) {
               onCancel={() => setAdding(false)}
             />
           ) : (
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setAdding(true)}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Q&A
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setAdding(true)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Q&A
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                disabled={populating}
+                onClick={async () => {
+                  setPopulating(true)
+                  try {
+                    await populateDefaultQA()
+                  } finally {
+                    setPopulating(false)
+                  }
+                }}
+              >
+                <ListChecks className="h-4 w-4 mr-2" />
+                {populating ? "Adding..." : "Add Common Questions"}
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>

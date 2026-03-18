@@ -32,6 +32,13 @@ export default async function ProfilePage() {
     linkedIn: profile?.contactLinkedIn ?? "",
     website: profile?.contactWebsite ?? "",
     location: profile?.contactLocation ?? "",
+    addressLine1: profile?.addressLine1 ?? "",
+    addressLine2: profile?.addressLine2 ?? "",
+    city: profile?.city ?? "",
+    state: profile?.state ?? "",
+    zipCode: profile?.zipCode ?? "",
+    country: profile?.country ?? "",
+    workdayPassword: profile?.workdayPassword ?? "",
   }
 
   const educationData = (profile?.education ?? []).map((e) => ({

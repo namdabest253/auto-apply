@@ -15,7 +15,9 @@
       "WebFetch(domain:www.google.com)",
       "Bash(npx prisma:*)",
       "Read(//tmp/**)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:www.autoapplier.com)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

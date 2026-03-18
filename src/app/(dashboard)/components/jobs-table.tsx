@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import {
   useReactTable,
   getCoreRowModel,
@@ -38,6 +38,24 @@ export function JobsTable({ initialJobs }: JobsTableProps) {
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
   const [showStale, setShowStale] = useState(false)
   const [globalFilter, setGlobalFilter] = useState("")
+  const showStaleRef = useRef(showStale)
+  showStaleRef.current = showStale
+
+  // Poll every 5s when any job has an active auto-apply
+  const hasActiveApply = jobs.some(
+    (j) => j.autoApplyStatus === "queued" || j.autoApplyStatus === "running"
+  )
+
+  useEffect(() => {
+    if (!hasActiveApply) return
+    const interval = setInterval(async () => {
+      try {
+        const updated = await getJobs({ includeStale: showStaleRef.current })
+        setJobs(updated)
+      } catch {}
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [hasActiveApply])
 
   const table = useReactTable({
     data: jobs,

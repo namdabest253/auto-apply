@@ -1,0 +1,8 @@
+{
+  "action": "click",
+  "selector": "#icims_skipLink1",
+  "value": null,
+  "ms": null,
+  "description": "Click the 'Skip Branding' link to proceed to the job application form.",
+  "reason": null
+}

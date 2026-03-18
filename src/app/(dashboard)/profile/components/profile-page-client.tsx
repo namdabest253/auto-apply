@@ -18,6 +18,13 @@ interface ProfilePageClientProps {
     linkedIn: string
     website: string
     location: string
+    addressLine1: string
+    addressLine2: string
+    city: string
+    state: string
+    zipCode: string
+    country: string
+    workdayPassword: string
   }
   education: Array<{
     id?: string

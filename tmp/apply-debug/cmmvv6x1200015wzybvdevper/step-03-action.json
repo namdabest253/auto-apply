@@ -1,0 +1,8 @@
+{
+  "action": "needs_review",
+  "selector": null,
+  "value": null,
+  "ms": null,
+  "description": "Resolve the issue with the 'Apply' button timing out.",
+  "reason": "Repeated timeout errors on clicking the 'Apply' button."
+}

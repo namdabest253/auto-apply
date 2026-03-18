@@ -12,6 +12,13 @@ export const contactInfoSchema = z.object({
   linkedIn: z.string().url("Invalid URL").optional().or(z.literal("")),
   website: z.string().url("Invalid URL").optional().or(z.literal("")),
   location: z.string().max(200).optional(),
+  addressLine1: z.string().max(300).optional(),
+  addressLine2: z.string().max(300).optional(),
+  city: z.string().max(100).optional(),
+  state: z.string().max(100).optional(),
+  zipCode: z.string().max(20).optional(),
+  country: z.string().max(100).optional(),
+  workdayPassword: z.string().max(200).optional(),
 })
 
 export const educationSchema = z.object({

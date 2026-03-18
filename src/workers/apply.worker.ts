@@ -2,16 +2,24 @@ import "dotenv/config";
 import { Worker, Job } from "bullmq";
 import { getRedisConnectionOptions } from "./queue";
 import { prisma } from "@/lib/prisma";
-import { createStealthBrowser } from "@/lib/scrapers/stealth";
+import { createApplyBrowser } from "@/lib/auto-apply/browser";
 import { extractInteractiveElements } from "@/lib/auto-apply/dom-utils";
 import { getNextAction } from "@/lib/auto-apply/claude-agent";
 import { executeAction } from "@/lib/auto-apply/form-filler";
 import type { ApplyJobData, StepLog, AgentAction } from "@/lib/auto-apply/types";
+import * as fs from "fs";
+import * as path from "path";
 
-const MAX_STEPS = 20;
+const MAX_STEPS = 50;
+const DEBUG_DIR = path.join(process.cwd(), "tmp", "apply-debug");
 
 async function processApplyJob(job: Job<ApplyJobData>): Promise<void> {
   const { applicationRunId, jobListingId, externalUrl, profile } = job.data;
+
+  // Create debug directory for this run
+  const runDebugDir = path.join(DEBUG_DIR, applicationRunId);
+  fs.mkdirSync(runDebugDir, { recursive: true });
+  console.log(`[apply-worker] Debug output: ${runDebugDir}`);
 
   // Update status to running
   await prisma.applicationRun.update({
@@ -27,29 +35,108 @@ async function processApplyJob(job: Job<ApplyJobData>): Promise<void> {
   let finalStatus: string = "failed";
   let errorMessage: string | undefined;
 
-  const { browser, context } = await createStealthBrowser();
+  const { browser, context } = await createApplyBrowser();
 
   try {
-    const page = await context.newPage();
+    let page = await context.newPage();
     await page.goto(externalUrl, {
-      waitUntil: "networkidle",
-      timeout: 30000,
+      waitUntil: "domcontentloaded",
+      timeout: 60000,
     });
+    // Wait for network to settle
+    await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => {});
+    // Wait for body to have actual content (JS-rendered pages)
+    await page.waitForFunction(
+      () => document.body && document.body.innerText.trim().length > 50,
+      { timeout: 15000 }
+    ).catch(() => {});
+    // Extra settle time for late-loading JS frameworks
+    await page.waitForTimeout(2000);
 
     for (let step = 1; step <= MAX_STEPS; step++) {
+      // Switch to newest page if a new tab/popup was opened
+      const allPages = context.pages();
+      if (allPages.length > 1) {
+        const newest = allPages[allPages.length - 1];
+        if (newest !== page) {
+          console.log("[apply-worker] New tab detected, switching to it");
+          page = newest;
+          await page.waitForLoadState("domcontentloaded", { timeout: 15000 }).catch(() => {});
+          await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+          // Close old tabs
+          for (const p of allPages) {
+            if (p !== page) {
+              await p.close().catch(() => {});
+            }
+          }
+        }
+      }
+      // Check if cancelled
+      const currentRun = await prisma.applicationRun.findUnique({
+        where: { id: applicationRunId },
+        select: { status: true },
+      });
+      if (currentRun?.status === "failed") {
+        finalStatus = "failed";
+        errorMessage = "Cancelled by user";
+        break;
+      }
+
       // Take screenshot
       const screenshot = await page.screenshot({
         type: "png",
         fullPage: true,
       });
 
-      // Extract interactive DOM elements
-      const domElements = await extractInteractiveElements(page);
+      // Extract interactive DOM elements (including iframes)
+      const { elements: domElements, selectorFrameMap } = await extractInteractiveElements(page);
 
-      // Get current URL (may have redirected)
+      // Get current URL
       const currentUrl = page.url();
 
-      // Ask Claude what to do next
+      // Save debug info for this step
+      try {
+        fs.writeFileSync(path.join(runDebugDir, `step-${String(step).padStart(2, "0")}.png`), screenshot);
+        fs.writeFileSync(path.join(runDebugDir, `step-${String(step).padStart(2, "0")}-dom.json`), JSON.stringify({
+          url: currentUrl,
+          elementCount: domElements.length,
+          elements: domElements,
+        }, null, 2));
+      } catch {}
+
+      // Detect loops: if the last N actions repeat the same pattern, we're stuck
+      if (steps.length >= 4) {
+        const recent = steps.slice(-4);
+        const actions = recent.map((s) => `${s.action.action}:${s.action.selector}`);
+        const unique = new Set(actions);
+        if (unique.size <= 2) {
+          console.warn("[apply-worker] Loop detected — same actions repeating");
+          // Try scrolling down to find a submit button
+          try {
+            await page.evaluate("window.scrollBy(0, 500)");
+            await page.waitForTimeout(500);
+          } catch {}
+
+          // If we've been looping for 6+ steps, bail out
+          if (steps.length >= 6) {
+            const last6 = steps.slice(-6).map((s) => `${s.action.action}:${s.action.selector}`);
+            const unique8 = new Set(last6);
+            if (unique8.size <= 3) {
+              steps.push({
+                step,
+                action: { action: "needs_review" as const, selector: null, value: null, ms: null, description: null, reason: "Agent stuck in a loop repeating the same actions" },
+                result: "error",
+                timestamp: new Date().toISOString(),
+              });
+              finalStatus = "needs_review";
+              errorMessage = "Agent stuck in a loop — needs manual intervention";
+              break;
+            }
+          }
+        }
+      }
+
+      // Ask the model what to do next
       let action: AgentAction;
       try {
         action = await getNextAction(
@@ -63,7 +150,7 @@ async function processApplyJob(job: Job<ApplyJobData>): Promise<void> {
         const msg = err instanceof Error ? err.message : String(err);
         steps.push({
           step,
-          action: { action: "needs_review", reason: `Claude error: ${msg}` },
+          action: { action: "needs_review" as const, selector: null, value: null, ms: null, description: null, reason: `Claude error: ${msg}` },
           result: "error",
           error: msg,
           timestamp: new Date().toISOString(),
@@ -73,15 +160,43 @@ async function processApplyJob(job: Job<ApplyJobData>): Promise<void> {
         break;
       }
 
+      // Log action to console and save debug
+      const desc = action.description || action.reason || "";
+      const val = action.value ? ` → "${action.value}"` : "";
+      console.log(`[apply-worker] Step ${step}: ${action.action}${val} (${desc})`);
+      try {
+        fs.writeFileSync(path.join(runDebugDir, `step-${String(step).padStart(2, "0")}-action.json`), JSON.stringify(action, null, 2));
+      } catch {}
+
       // Execute the action
       let result: "success" | "error" = "success";
       let stepError: string | undefined;
 
       try {
-        await executeAction(page, action, profile.resumeFilePath);
+        // Resolve which frame the target element lives in
+        const targetFrame = action.selector ? selectorFrameMap.get(action.selector) : undefined;
+        await executeAction(page, action, profile.resumeFilePath, targetFrame || page);
       } catch (err) {
-        result = "error";
-        stepError = err instanceof Error ? err.message : String(err);
+        const msg = err instanceof Error ? err.message : String(err);
+        // If page/context was closed, a new tab likely opened — switch to it
+        if (msg.includes("has been closed") || msg.includes("Target closed")) {
+          const allPages = context.pages();
+          if (allPages.length > 0) {
+            page = allPages[allPages.length - 1];
+            console.log("[apply-worker] Page closed after click, switched to new page:", page.url());
+            await page.waitForLoadState("domcontentloaded", { timeout: 15000 }).catch(() => {});
+            await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+            // Not actually an error — the click worked, it just navigated
+            result = "success";
+          } else {
+            result = "error";
+            stepError = msg;
+          }
+        } else {
+          result = "error";
+          stepError = msg;
+          console.error(`[apply-worker] Step ${step} error:`, stepError);
+        }
       }
 
       steps.push({
@@ -105,7 +220,7 @@ async function processApplyJob(job: Job<ApplyJobData>): Promise<void> {
       }
       if (action.action === "needs_review") {
         finalStatus = "needs_review";
-        errorMessage = action.reason;
+        errorMessage = action.reason ?? undefined;
         break;
       }
 

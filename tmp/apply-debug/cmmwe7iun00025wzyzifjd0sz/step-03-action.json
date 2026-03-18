@@ -1,0 +1,8 @@
+{
+  "action": "fill",
+  "selector": "#email",
+  "value": "nhnguyen@uchicago.edu",
+  "ms": null,
+  "description": "Fill in the email field with the applicant's email.",
+  "reason": null
+}

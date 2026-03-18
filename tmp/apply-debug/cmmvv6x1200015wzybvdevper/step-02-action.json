@@ -1,0 +1,8 @@
+{
+  "action": "click",
+  "selector": "div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(6) > div:nth-of-type(1) > a:nth-of-type(1)",
+  "value": null,
+  "ms": null,
+  "description": "Attempt to click the 'Apply' button again to start the application process.",
+  "reason": null
+}

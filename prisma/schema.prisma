@@ -64,6 +64,13 @@ model Profile {
   contactLinkedIn String?
   contactWebsite  String?
   contactLocation String?
+  addressLine1    String?
+  addressLine2    String?
+  city            String?
+  state           String?
+  zipCode         String?
+  country         String?
+  workdayPassword String?
   otherText       String?
   education       Education[]
   workHistory     WorkHistory[]

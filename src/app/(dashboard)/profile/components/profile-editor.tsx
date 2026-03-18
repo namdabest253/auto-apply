@@ -35,6 +35,13 @@ interface ContactData {
   linkedIn: string
   website: string
   location: string
+  addressLine1: string
+  addressLine2: string
+  city: string
+  state: string
+  zipCode: string
+  country: string
+  workdayPassword: string
 }
 
 interface EducationData {
@@ -147,6 +154,13 @@ export function ProfileEditor({
         linkedIn: contact.linkedIn || undefined,
         website: contact.website || undefined,
         location: contact.location || undefined,
+        addressLine1: contact.addressLine1 || undefined,
+        addressLine2: contact.addressLine2 || undefined,
+        city: contact.city || undefined,
+        state: contact.state || undefined,
+        zipCode: contact.zipCode || undefined,
+        country: contact.country || undefined,
+        workdayPassword: contact.workdayPassword || undefined,
       })
     } finally {
       setContactSaving(false)
@@ -226,6 +240,78 @@ export function ProfileEditor({
                 setContact({ ...contact, location: e.target.value })
               }
               placeholder="City, State"
+            />
+          </FieldRow>
+
+          <Separator className="bg-zinc-800 my-2" />
+          <p className="text-sm font-medium text-zinc-300 text-center">Address</p>
+
+          <FieldRow label="Street">
+            <Input
+              value={contact.addressLine1}
+              onChange={(e) =>
+                setContact({ ...contact, addressLine1: e.target.value })
+              }
+              placeholder="123 Main St"
+            />
+          </FieldRow>
+          <FieldRow label="Apt/Suite">
+            <Input
+              value={contact.addressLine2}
+              onChange={(e) =>
+                setContact({ ...contact, addressLine2: e.target.value })
+              }
+              placeholder="Apt 4B"
+            />
+          </FieldRow>
+          <FieldRow label="City">
+            <Input
+              value={contact.city}
+              onChange={(e) =>
+                setContact({ ...contact, city: e.target.value })
+              }
+              placeholder="New York"
+            />
+          </FieldRow>
+          <FieldRow label="State">
+            <Input
+              value={contact.state}
+              onChange={(e) =>
+                setContact({ ...contact, state: e.target.value })
+              }
+              placeholder="NY"
+            />
+          </FieldRow>
+          <FieldRow label="ZIP Code">
+            <Input
+              value={contact.zipCode}
+              onChange={(e) =>
+                setContact({ ...contact, zipCode: e.target.value })
+              }
+              placeholder="10001"
+            />
+          </FieldRow>
+          <FieldRow label="Country">
+            <Input
+              value={contact.country}
+              onChange={(e) =>
+                setContact({ ...contact, country: e.target.value })
+              }
+              placeholder="United States"
+            />
+          </FieldRow>
+
+          <Separator className="bg-zinc-800 my-2" />
+          <p className="text-sm font-medium text-zinc-300 text-center">Account Credentials</p>
+
+          <FieldRow label="Workday Password">
+            <Input
+              type="password"
+              value={contact.workdayPassword}
+              onChange={(e) =>
+                setContact({ ...contact, workdayPassword: e.target.value })
+              }
+              placeholder="Universal password for Workday accounts"
             />
           </FieldRow>
           <div className="flex justify-end">

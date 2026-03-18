@@ -1,50 +1,24 @@
-import { generateObject } from "ai";
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { z } from "zod";
+import { generateText } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
 import type { InteractiveElement, AgentAction, StepLog, SerializedProfile } from "./types";
 
-const actionSchema = z.discriminatedUnion("action", [
-  z.object({
-    action: z.literal("click"),
-    selector: z.string(),
-    description: z.string(),
-  }),
-  z.object({
-    action: z.literal("fill"),
-    selector: z.string(),
-    value: z.string(),
-    description: z.string(),
-  }),
-  z.object({
-    action: z.literal("select"),
-    selector: z.string(),
-    value: z.string(),
-    description: z.string(),
-  }),
-  z.object({
-    action: z.literal("upload_file"),
-    selector: z.string(),
-    description: z.string(),
-  }),
-  z.object({
-    action: z.literal("submit"),
-    selector: z.string(),
-    description: z.string(),
-  }),
-  z.object({
-    action: z.literal("wait"),
-    ms: z.number(),
-    description: z.string(),
-  }),
-  z.object({
-    action: z.literal("done"),
-    description: z.string(),
-  }),
-  z.object({
-    action: z.literal("needs_review"),
-    reason: z.string(),
-  }),
-]);
+async function callWithRetry<T>(fn: () => Promise<T>, maxRetries = 5): Promise<T> {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("Rate limit") || msg.includes("429")) {
+        const waitMs = Math.min(2000 * Math.pow(2, i), 30000);
+        console.log(`[agent] Rate limited, waiting ${waitMs}ms (attempt ${i + 1}/${maxRetries})`);
+        await new Promise((r) => setTimeout(r, waitMs));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error(`Failed after ${maxRetries} attempts`);
+}
 
 function buildProfileContext(profile: SerializedProfile): string {
   const lines: string[] = ["## Applicant Profile"];
@@ -55,6 +29,19 @@ function buildProfileContext(profile: SerializedProfile): string {
   if (profile.contactLinkedIn) lines.push(`LinkedIn: ${profile.contactLinkedIn}`);
   if (profile.contactWebsite) lines.push(`Website: ${profile.contactWebsite}`);
   if (profile.contactLocation) lines.push(`Location: ${profile.contactLocation}`);
+
+  const addrParts = [profile.addressLine1, profile.addressLine2, profile.city, profile.state, profile.zipCode, profile.country].filter(Boolean);
+  if (addrParts.length > 0) {
+    lines.push("\n### Address");
+    if (profile.addressLine1) lines.push(`Street: ${profile.addressLine1}`);
+    if (profile.addressLine2) lines.push(`Apt/Suite: ${profile.addressLine2}`);
+    if (profile.city) lines.push(`City: ${profile.city}`);
+    if (profile.state) lines.push(`State: ${profile.state}`);
+    if (profile.zipCode) lines.push(`ZIP: ${profile.zipCode}`);
+    if (profile.country) lines.push(`Country: ${profile.country}`);
+  }
+
+  if (profile.workdayPassword) lines.push(`\nWorkday Account Password: ${profile.workdayPassword}`);
 
   if (profile.education.length > 0) {
     lines.push("\n### Education");
@@ -102,6 +89,7 @@ function buildDomSummary(elements: InteractiveElement[]): string {
       if (el.id) parts.push(`id="${el.id}"`);
       if (el.placeholder) parts.push(`placeholder="${el.placeholder}"`);
       if (el.ariaLabel) parts.push(`aria-label="${el.ariaLabel}"`);
+      if ((el as any).dataAutomationId) parts.push(`data-automation-id="${(el as any).dataAutomationId}"`);
       if (el.labelText) parts.push(`label="${el.labelText}"`);
       if (el.value) parts.push(`value="${el.value}"`);
       if (el.isCaptcha) parts.push("CAPTCHA");
@@ -118,29 +106,53 @@ function buildDomSummary(elements: InteractiveElement[]): string {
     .join("\n");
 }
 
-const SYSTEM_PROMPT = `You are a job application agent. You are navigating a web page to fill out and submit a job application on behalf of the user.
+const SYSTEM_PROMPT = `You are a job application agent. You navigate web pages to fill out and submit job applications.
 
-You will receive:
-1. A screenshot of the current page
-2. A list of interactive DOM elements with their selectors
-3. The applicant's profile data
-4. History of actions you've already taken
+You will receive a screenshot, interactive DOM elements with CSS selectors, and the applicant's profile.
 
-Your job is to return exactly ONE action to take next. Analyze the screenshot and DOM to understand the current state of the page.
+Return ONLY a JSON object (no markdown, no code fences) with exactly these fields:
+{
+  "action": "click" | "fill" | "select" | "upload_file" | "submit" | "wait" | "done" | "needs_review",
+  "selector": "CSS selector or null",
+  "value": "text value or null",
+  "ms": number or null,
+  "description": "what this action does",
+  "reason": "why needs_review, or null"
+}
 
 Rules:
-- Fill form fields with the applicant's profile data. Match fields to the most appropriate profile data.
-- For screening questions, use the pre-answered QA bank. If a question isn't in the bank, use your best judgment based on the profile.
-- For file upload fields (resume), use the "upload_file" action.
-- Click "Next", "Continue", or "Submit" buttons to advance through multi-step forms.
-- If you see a success/confirmation page (e.g., "Application submitted", "Thank you"), return { action: "done" }.
-- If you see a CAPTCHA, return { action: "needs_review", reason: "captcha detected" }.
-- If you encounter something you cannot handle (login wall, error page, etc.), return { action: "needs_review", reason: "..." }.
-- Use the exact CSS selectors from the DOM list for your actions.
-- Only fill one field or click one button per action. Do not try to do multiple things at once.
-- If a dropdown/select needs a specific value, look at the available options and pick the best match.
-- For checkboxes or radio buttons that need to be selected, use "click".
-- If the page is still loading, use { action: "wait", ms: 2000 }.`;
+- Fill form fields with the applicant's profile data. Match fields to the most appropriate data.
+- For screening questions, use the pre-answered QA bank. If not in the bank, use best judgment.
+- For file uploads (resume), use "upload_file".
+- Click "Next", "Continue", or "Submit" to advance through multi-step forms.
+- If you see a success/confirmation page, return action "done".
+- If you see a CAPTCHA, return action "needs_review" with reason.
+- Use exact CSS selectors from the DOM list.
+- One action per response.
+- For dropdowns, pick the best matching option value.
+- For checkboxes/radio buttons, use "click".
+
+CRITICAL — AVOID LOOPS:
+- Check the Action History carefully. If a field already has a value (shown in the DOM element list), DO NOT fill it again.
+- If you see you have already filled a field or clicked a button in previous steps, DO NOT repeat that action.
+- If fields are already filled, look for a "Next", "Continue", "Submit", "Save and Continue" button to advance to the next page.
+- If you cannot find a submit/next button, try scrolling down — use action "click" on the page body or a scroll target.
+- If you are stuck repeating the same actions for 3+ steps, return { action: "needs_review", reason: "stuck in loop" }.
+- If page is loading, use action "wait" with ms: 2000.
+
+WORKDAY SIGN-IN HANDLING:
+- Workday sites require an account. If you see a sign-in page, DO NOT return needs_review.
+- Use the applicant's email address to sign in or create an account.
+- If there is a "Create Account" or "Sign Up" option, click it and create an account using the email and the Workday Account Password from the profile.
+- If there is a "Sign In" form, enter the email and Workday Account Password.
+- If you see "Forgot Password" or account verification steps, proceed through them.
+- After signing in or creating an account, continue with the application form as normal.
+- Only return needs_review for sign-in if no email or Workday password is available in the profile.
+
+WORKDAY SELECTORS:
+- Workday elements have data-automation-id attributes. Prefer selectors like [data-automation-id="..."] over long nth-of-type paths.
+- For file uploads on Workday, the visible element is a button, not an input. Use "upload_file" with the file input selector (input[type="file"]), NOT the button selector.
+- If you see an input[type="file"] in the DOM (even if hidden), use that selector for upload_file actions.`;
 
 export async function getNextAction(
   screenshot: Buffer,
@@ -149,23 +161,29 @@ export async function getNextAction(
   profile: SerializedProfile,
   history: StepLog[]
 ): Promise<AgentAction> {
-  const anthropic = createAnthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
+  const openai = createOpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
   });
 
   const historyText =
     history.length > 0
       ? history
-          .map(
-            (s) =>
-              `Step ${s.step}: ${s.action.action} → ${s.result}${s.error ? ` (${s.error})` : ""}`
-          )
+          .slice(-15) // Only send last 15 steps to avoid token bloat
+          .map((s) => {
+            const a = s.action;
+            let detail = `Step ${s.step}: ${a.action}`;
+            if (a.selector) detail += ` on "${a.selector}"`;
+            if (a.value) detail += ` value="${a.value}"`;
+            if (a.description) detail += ` (${a.description})`;
+            detail += ` → ${s.result}`;
+            if (s.error) detail += ` ERROR: ${s.error}`;
+            return detail;
+          })
           .join("\n")
       : "No actions taken yet.";
 
-  const { object } = await generateObject({
-    model: anthropic("claude-sonnet-4-20250514"),
-    schema: actionSchema,
+  const { text } = await callWithRetry(() => generateText({
+    model: openai("gpt-4o-mini"),
     messages: [
       {
         role: "system",
@@ -185,17 +203,33 @@ export async function getNextAction(
 ## Interactive Elements
 ${buildDomSummary(domElements)}
 
+## Fields Already Filled (DO NOT fill these again)
+${domElements.filter((el) => el.value && (el.tag === "input" || el.tag === "textarea" || el.tag === "select")).map((el) => `- "${el.labelText || el.name || el.placeholder || el.selector}": "${el.value}"`).join("\n") || "None yet."}
+
 ${buildProfileContext(profile)}
 
-## Action History
+## Action History (recent)
 ${historyText}
 
-Analyze the screenshot and DOM elements. Return the next action to take.`,
+IMPORTANT: Look at "Fields Already Filled" above. Do NOT re-fill any field that already has a value. Instead, find a "Next", "Continue", "Submit", or "Save and Continue" button to advance. If all visible fields are filled, you MUST click the submit/next button.
+
+Return the next action as a JSON object.`,
           },
         ],
       },
     ],
-  });
+  }));
 
-  return object as AgentAction;
+  // Parse the JSON response, stripping any markdown fences
+  const cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+  const parsed = JSON.parse(cleaned);
+
+  return {
+    action: parsed.action,
+    selector: parsed.selector ?? null,
+    value: parsed.value ?? null,
+    ms: parsed.ms ?? null,
+    description: parsed.description ?? null,
+    reason: parsed.reason ?? null,
+  };
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import {
   Sheet,
   SheetContent,
@@ -10,9 +10,205 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { ExternalLink, MapPin, Calendar, Building2, DollarSign, Loader2, CheckCircle2, Send, Coffee, AlertTriangle } from "lucide-react"
-import type { JobDetail } from "../actions"
-import { getJobDetail, markJobApplied, unmarkJobApplied, autoApplyToJob, findCoffeeChatContacts } from "../actions"
+import { ExternalLink, MapPin, Calendar, Building2, DollarSign, Loader2, CheckCircle2, Send, Coffee, AlertTriangle, XCircle, MousePointerClick, TextCursorInput, Upload, List, Clock, Eye } from "lucide-react"
+import type { JobDetail, ApplicationRunStatus } from "../actions"
+import { getJobDetail, markJobApplied, unmarkJobApplied, autoApplyToJob, cancelAutoApply, findCoffeeChatContacts, getApplicationRunStatus } from "../actions"
+
+interface StepAction {
+  action: string
+  selector?: string
+  value?: string
+  description?: string
+  reason?: string
+  ms?: number
+}
+
+interface StepLog {
+  step: number
+  action: StepAction
+  result: "success" | "error"
+  error?: string
+  timestamp: string
+}
+
+function stepActionIcon(action: string) {
+  switch (action) {
+    case "click":
+    case "submit":
+      return <MousePointerClick className="h-3 w-3" />
+    case "fill":
+      return <TextCursorInput className="h-3 w-3" />
+    case "select":
+      return <List className="h-3 w-3" />
+    case "upload_file":
+      return <Upload className="h-3 w-3" />
+    case "wait":
+      return <Clock className="h-3 w-3" />
+    case "done":
+      return <CheckCircle2 className="h-3 w-3" />
+    case "needs_review":
+      return <AlertTriangle className="h-3 w-3" />
+    default:
+      return <Eye className="h-3 w-3" />
+  }
+}
+
+function formatStepDescription(step: StepLog): string {
+  const a = step.action
+  switch (a.action) {
+    case "fill":
+      return `Filled "${a.description || a.selector}" with "${a.value}"`
+    case "select":
+      return `Selected "${a.value}" in "${a.description || a.selector}"`
+    case "click":
+      return `Clicked: ${a.description || a.selector}`
+    case "submit":
+      return `Submitted: ${a.description || a.selector}`
+    case "upload_file":
+      return `Uploaded resume to ${a.description || a.selector}`
+    case "wait":
+      return `Waited ${a.ms}ms — ${a.description || "page loading"}`
+    case "done":
+      return `Application complete: ${a.description || "submitted successfully"}`
+    case "needs_review":
+      return `Needs manual review: ${a.reason || "unknown reason"}`
+    default:
+      return a.description || a.action
+  }
+}
+
+function ApplicationRunLogs({ jobId, onStatusChange }: { jobId: string; onStatusChange?: (status: string) => void }) {
+  const [run, setRun] = useState<ApplicationRunStatus | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const status = await getApplicationRunStatus(jobId)
+      setRun((prev) => {
+        // Notify parent when status changes
+        if (status && prev?.status !== status.status) {
+          onStatusChange?.(status.status)
+        }
+        return status
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [jobId, onStatusChange])
+
+  useEffect(() => {
+    fetchStatus()
+  }, [fetchStatus])
+
+  // Poll every 2s while running/queued
+  useEffect(() => {
+    if (!run || (run.status !== "running" && run.status !== "queued" && run.status !== "pending")) return
+    const interval = setInterval(fetchStatus, 2000)
+    return () => clearInterval(interval)
+  }, [run?.status, fetchStatus])
+
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2 text-xs text-zinc-500">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Loading logs...
+      </div>
+    )
+  }
+
+  if (!run) return null
+
+  const steps = (run.steps as StepLog[] | null) || []
+  const isActive = run.status === "running" || run.status === "queued" || run.status === "pending"
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-zinc-300">
+          Application Log
+        </h3>
+        <Badge
+          className={
+            run.status === "succeeded"
+              ? "bg-emerald-900/30 text-emerald-400 border-emerald-800"
+              : run.status === "running" || run.status === "queued" || run.status === "pending"
+                ? "bg-blue-900/30 text-blue-400 border-blue-800"
+                : run.status === "needs_review"
+                  ? "bg-amber-900/30 text-amber-400 border-amber-800"
+                  : "bg-red-900/30 text-red-400 border-red-800"
+          }
+        >
+          {isActive && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+          {run.status}
+        </Badge>
+      </div>
+
+      {run.errorMessage && (
+        <div className="rounded border border-red-900 bg-red-950/30 p-2 text-xs text-red-400">
+          {run.errorMessage}
+        </div>
+      )}
+
+      {steps.length > 0 ? (
+        <div className="space-y-1 max-h-64 overflow-y-auto">
+          {steps.map((step) => (
+            <div
+              key={step.step}
+              className={`flex items-start gap-2 rounded px-2 py-1.5 text-xs ${
+                step.result === "error"
+                  ? "bg-red-950/20 border border-red-900/30"
+                  : step.action.action === "done"
+                    ? "bg-emerald-950/20 border border-emerald-900/30"
+                    : step.action.action === "needs_review"
+                      ? "bg-amber-950/20 border border-amber-900/30"
+                      : "bg-zinc-900/50"
+              }`}
+            >
+              <span className={`mt-0.5 shrink-0 ${
+                step.result === "error" ? "text-red-400"
+                  : step.action.action === "done" ? "text-emerald-400"
+                    : step.action.action === "needs_review" ? "text-amber-400"
+                      : "text-zinc-400"
+              }`}>
+                {stepActionIcon(step.action.action)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-zinc-500 shrink-0">#{step.step}</span>
+                  <span className={
+                    step.result === "error" ? "text-red-300"
+                      : step.action.action === "done" ? "text-emerald-300"
+                        : step.action.action === "needs_review" ? "text-amber-300"
+                          : "text-zinc-300"
+                  }>
+                    {formatStepDescription(step)}
+                  </span>
+                </div>
+                {step.error && (
+                  <span className="text-red-400 block mt-0.5">Error: {step.error}</span>
+                )}
+                <span className="text-zinc-600 block mt-0.5">
+                  {new Date(step.timestamp).toLocaleTimeString()}
+                </span>
+              </div>
+            </div>
+          ))}
+          {isActive && (
+            <div className="flex items-center gap-2 px-2 py-1.5 text-xs text-blue-400">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Agent is working...
+            </div>
+          )}
+        </div>
+      ) : isActive ? (
+        <div className="flex items-center gap-2 text-xs text-blue-400 py-2">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Waiting for agent to start...
+        </div>
+      ) : null}
+    </div>
+  )
+}
 
 function AutoApplyButton({
   job,
@@ -40,15 +236,34 @@ function AutoApplyButton({
 
   if (status === "queued" || status === "running") {
     return (
-      <Button
-        variant="outline"
-        size="sm"
-        className="border-blue-800 text-blue-400"
-        disabled
-      >
-        <Loader2 className="h-3 w-3 animate-spin" />
-        Applying...
-      </Button>
+      <div className="flex gap-1">
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-blue-800 text-blue-400"
+          disabled
+        >
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Applying...
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-red-800 text-red-400 hover:bg-red-900/30"
+          disabled={submitting}
+          onClick={async () => {
+            setSubmitting(true)
+            try {
+              await cancelAutoApply(job.id)
+              onStatusChange("failed")
+            } finally {
+              setSubmitting(false)
+            }
+          }}
+        >
+          Cancel
+        </Button>
+      </div>
     )
   }
 
@@ -116,15 +331,21 @@ export function JobDetailPanel({ jobId, onClose, onJobUpdated }: JobDetailPanelP
   const [job, setJob] = useState<JobDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [applyingStatus, setApplyingStatus] = useState(false)
+  const [showLogs, setShowLogs] = useState(false)
 
   useEffect(() => {
     if (!jobId) {
       setJob(null)
+      setShowLogs(false)
       return
     }
     setLoading(true)
     getJobDetail(jobId)
-      .then(setJob)
+      .then((j) => {
+        setJob(j)
+        // Auto-show logs if there's an active or completed auto-apply
+        if (j?.autoApplyStatus) setShowLogs(true)
+      })
       .finally(() => setLoading(false))
   }, [jobId])
 
@@ -247,6 +468,7 @@ export function JobDetailPanel({ jobId, onClose, onJobUpdated }: JobDetailPanelP
                   job={job}
                   onStatusChange={(status) => {
                     setJob({ ...job, autoApplyStatus: status })
+                    setShowLogs(true)
                     onJobUpdated?.()
                   }}
                 />
@@ -264,6 +486,20 @@ export function JobDetailPanel({ jobId, onClose, onJobUpdated }: JobDetailPanelP
                   Find Coffee Chats
                 </Button>
               </div>
+
+              {/* Application Run Logs */}
+              {showLogs && job.autoApplyStatus && (
+                <>
+                  <Separator className="bg-zinc-800" />
+                  <ApplicationRunLogs
+                    jobId={job.id}
+                    onStatusChange={(status) => {
+                      setJob({ ...job, autoApplyStatus: status })
+                      onJobUpdated?.()
+                    }}
+                  />
+                </>
+              )}
 
               <Separator className="bg-zinc-800" />
 
