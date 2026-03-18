@@ -124,6 +124,7 @@ Rules:
 - Fill form fields with the applicant's profile data. Match fields to the most appropriate data.
 - For screening questions, use the pre-answered QA bank. If not in the bank, use best judgment.
 - For file uploads (resume), use "upload_file".
+- BEFORE clicking any "Next", "Continue", or "Submit" button, check the DOM for unchecked checkboxes — especially consent, privacy, terms, or agreement checkboxes. Click those FIRST. Look for inputs with type="checkbox" that have labels containing "consent", "agree", "privacy", "terms", "acknowledge", or "accept". Always check these before proceeding.
 - Click "Next", "Continue", or "Submit" to advance through multi-step forms.
 - If you see a success/confirmation page, return action "done".
 - If you see a CAPTCHA, return action "needs_review" with reason.
@@ -206,12 +207,18 @@ ${buildDomSummary(domElements)}
 ## Fields Already Filled (DO NOT fill these again)
 ${domElements.filter((el) => el.value && (el.tag === "input" || el.tag === "textarea" || el.tag === "select")).map((el) => `- "${el.labelText || el.name || el.placeholder || el.selector}": "${el.value}"`).join("\n") || "None yet."}
 
+## Unchecked Checkboxes (CHECK THESE before clicking Next/Submit)
+${domElements.filter((el) => el.tag === "input" && el.type === "checkbox" && el.value !== "on" && el.value !== "true").map((el) => `- selector="${el.selector}" label="${el.labelText || el.name || el.ariaLabel || "unknown"}"`).join("\n") || "None."}
+
 ${buildProfileContext(profile)}
 
 ## Action History (recent)
 ${historyText}
 
-IMPORTANT: Look at "Fields Already Filled" above. Do NOT re-fill any field that already has a value. Instead, find a "Next", "Continue", "Submit", or "Save and Continue" button to advance. If all visible fields are filled, you MUST click the submit/next button.
+IMPORTANT:
+1. Do NOT re-fill any field listed in "Fields Already Filled".
+2. CHECK all unchecked consent/privacy/terms checkboxes BEFORE clicking Next/Submit.
+3. If all fields are filled and checkboxes checked, click the submit/next button.
 
 Return the next action as a JSON object.`,
           },

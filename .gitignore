@@ -43,3 +43,6 @@ redis_data
 # uploaded files
 /uploads
 .discover/
+
+# temp files
+/tmp/

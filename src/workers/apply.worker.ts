@@ -160,6 +160,28 @@ async function processApplyJob(job: Job<ApplyJobData>): Promise<void> {
         break;
       }
 
+      // Validate selector exists in the extracted DOM (prevent hallucinated selectors)
+      if (action.selector && action.action !== "done" && action.action !== "needs_review" && action.action !== "wait") {
+        const knownSelectors = new Set(domElements.map((el) => el.selector));
+        if (!knownSelectors.has(action.selector)) {
+          console.warn(`[apply-worker] Step ${step}: Agent hallucinated selector "${action.selector}" — not in DOM`);
+          // Find closest match by text similarity or just skip
+          steps.push({
+            step,
+            action,
+            result: "error",
+            error: `Selector not found in DOM: ${action.selector}`,
+            timestamp: new Date().toISOString(),
+          });
+          // Persist and continue — the agent will see the error in history
+          await prisma.applicationRun.update({
+            where: { id: applicationRunId },
+            data: { steps: JSON.parse(JSON.stringify(steps)) },
+          });
+          continue;
+        }
+      }
+
       // Log action to console and save debug
       const desc = action.description || action.reason || "";
       const val = action.value ? ` → "${action.value}"` : "";
